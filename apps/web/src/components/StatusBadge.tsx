@@ -14,44 +14,44 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     switch (status) {
       case "VERIFIED_PASS":
         return {
-          bg: "bg-[#238636]/15 border-[#238636]/50 text-[#3fb950]",
-          dot: "bg-[#3fb950]",
+          bg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.2)]",
+          glow: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]",
           icon: "✔",
           label: "Verified Pass",
         };
       case "VERIFIED_FAILURE":
         return {
-          bg: "bg-[#da3633]/15 border-[#da3633]/50 text-[#f85149]",
-          dot: "bg-[#f85149]",
+          bg: "bg-rose-500/10 border-rose-500/30 text-rose-400 shadow-[0_0_14px_rgba(244,63,94,0.2)]",
+          glow: "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.9)]",
           icon: "✖",
           label: "Verified Failure",
         };
       case "STATIC_WARNING":
         return {
-          bg: "bg-[#d29922]/15 border-[#d29922]/50 text-[#e3b341]",
-          dot: "bg-[#d29922]",
+          bg: "bg-amber-500/10 border-amber-500/30 text-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.2)]",
+          glow: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]",
           icon: "▲",
           label: "Static Warning",
         };
       case "AI_HYPOTHESIS":
         return {
-          bg: "bg-[#bc8cff]/15 border-[#bc8cff]/50 text-[#d2a8ff]",
-          dot: "bg-[#bc8cff]",
+          bg: "bg-purple-500/10 border-purple-500/30 text-purple-300 shadow-[0_0_14px_rgba(168,85,247,0.25)]",
+          glow: "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.9)]",
           icon: "✦",
           label: "AI Hypothesis",
         };
       case "CHECK_ERROR":
         return {
-          bg: "bg-[#da3633]/20 border-[#f85149]/60 text-[#ff7b72]",
-          dot: "bg-[#ff7b72]",
+          bg: "bg-red-500/15 border-red-500/40 text-red-300 shadow-[0_0_14px_rgba(239,68,68,0.25)]",
+          glow: "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.9)]",
           icon: "⛔",
           label: "Check Error",
         };
       case "UNSUPPORTED":
       default:
         return {
-          bg: "bg-[#21262d] border-[#30363d] text-[#8b949e]",
-          dot: "bg-[#8b949e]",
+          bg: "bg-white/[0.04] border-white/10 text-[#8b949e]",
+          glow: "bg-slate-400",
           icon: "○",
           label: "Unsupported",
         };
@@ -61,13 +61,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   const config = getBadgeConfig();
   const sizeClasses =
     size === "sm"
-      ? "text-[11px] px-2 py-0.5 gap-1.5"
-      : "text-xs px-2.5 py-1 gap-1.5 font-medium";
+      ? "text-[11px] px-2.5 py-0.5 gap-1.5"
+      : "text-xs px-3 py-1 gap-2 font-medium";
 
   return (
     <span
-      className={`inline-flex items-center rounded-md border font-mono tracking-tight ${config.bg} ${sizeClasses}`}
+      className={`inline-flex items-center rounded-full border backdrop-blur-md font-mono tracking-tight ${config.bg} ${sizeClasses}`}
     >
+      <span className={`w-1.5 h-1.5 rounded-full ${config.glow}`} />
       <span className="text-[10px] leading-none font-bold">{config.icon}</span>
       <span>{config.label}</span>
     </span>
