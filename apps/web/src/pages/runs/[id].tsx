@@ -51,9 +51,9 @@ export default function RunDetailsPage() {
 
   if (loading) {
     return (
-      <div className="p-16 text-center text-[#8b949e] liquid-glass rounded-2xl font-mono text-xs space-y-2">
-        <span className="animate-spin inline-block mr-2 text-indigo-400 text-base">↻</span>
-        <div>Loading verification run report from backend...</div>
+      <div className="p-16 text-center text-[#8b949e] border border-[#30363d] rounded-md bg-[#161b22] font-mono text-xs">
+        <span className="animate-spin inline-block mr-2">↻</span>
+        Loading verification run report from backend...
       </div>
     );
   }
@@ -63,17 +63,17 @@ export default function RunDetailsPage() {
       <div className="space-y-4">
         <Link
           href="/"
-          className="text-xs font-mono text-indigo-400 hover:text-indigo-300 inline-flex items-center space-x-1"
+          className="text-xs font-mono text-[#58a6ff] hover:underline inline-flex items-center space-x-1"
         >
           <span>&larr;</span>
           <span>Back to Verification Runs</span>
         </Link>
-        <div className="p-6 border border-rose-500/30 bg-rose-500/10 text-rose-300 rounded-2xl font-mono text-xs space-y-2 backdrop-blur-md">
+        <div className="p-6 border border-[#da3633]/40 bg-[#da3633]/15 text-[#f85149] rounded-md font-mono text-xs space-y-2">
           <p className="font-bold">Error Querying Backend:</p>
           <p>{errorMsg}</p>
           <button
             onClick={() => id && typeof id === "string" && loadRun(id)}
-            className="px-3 py-1.5 bg-white/[0.05] border border-white/10 text-white rounded-lg hover:bg-white/[0.1] transition-all"
+            className="btn-apple-liquid btn-apple-secondary px-3 py-1 text-xs"
           >
             ↻ Retry
           </button>
@@ -87,15 +87,15 @@ export default function RunDetailsPage() {
       <div className="space-y-4">
         <Link
           href="/"
-          className="text-xs font-mono text-indigo-400 hover:text-indigo-300 inline-flex items-center space-x-1"
+          className="text-xs font-mono text-[#58a6ff] hover:underline inline-flex items-center space-x-1"
         >
           <span>&larr;</span>
           <span>Back to Verification Runs</span>
         </Link>
-        <div className="p-12 text-center liquid-glass rounded-2xl text-[#8b949e] space-y-2">
-          <p className="text-base font-semibold text-white">Run Not Found</p>
+        <div className="p-8 text-center border border-[#30363d] rounded-md bg-[#161b22] text-[#8b949e] space-y-2">
+          <p className="text-sm font-semibold text-[#f0f6fc]">Run Not Found</p>
           <p className="text-xs font-mono">
-            Verification run <span className="text-indigo-400 font-bold">{id}</span> does not exist in the database.
+            Verification run <span className="text-[#58a6ff]">{id}</span> does not exist in the database.
           </p>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default function RunDetailsPage() {
         <div className="flex items-center justify-between text-xs text-[#8b949e]">
           <Link
             href="/"
-            className="text-indigo-400 hover:text-indigo-300 inline-flex items-center space-x-1 font-mono transition-colors"
+            className="text-[#58a6ff] hover:underline inline-flex items-center space-x-1"
           >
             <span>&larr;</span>
             <span>Back to Verification Runs</span>
@@ -121,45 +121,45 @@ export default function RunDetailsPage() {
 
           <button
             onClick={() => setIsTriggerOpen(true)}
-            className="px-3 py-1 text-xs font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] transition-all shadow-sm"
+            className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs font-medium"
           >
             Re-run Verification
           </button>
         </div>
 
-        {/* Liquid Glass Header Panel */}
-        <div className="liquid-glass rounded-2xl overflow-hidden shadow-2xl">
-          <div className="p-5 sm:p-6 border-b border-white/[0.08] bg-white/[0.02] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Header Panel */}
+        <div className="border border-[#30363d] rounded-md bg-[#161b22] overflow-hidden">
+          <div className="p-5 border-b border-[#30363d] bg-[#21262d]/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <div className="flex items-center space-x-3 flex-wrap gap-y-1">
-                <span className="font-mono text-xl font-extrabold text-white">
+                <span className="font-mono text-lg font-bold text-[#f0f6fc]">
                   {run.id}
                 </span>
                 <StatusBadge status={run.status} />
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-white/70 font-mono">
+                <span className="text-xs px-2 py-0.5 rounded bg-[#0d1117] border border-[#30363d] text-[#8b949e] font-mono">
                   {run.repository_id}
                 </span>
               </div>
-              <p className="text-xs text-[#8b949e] mt-2 flex items-center space-x-2 flex-wrap">
+              <p className="text-xs text-[#8b949e] mt-1.5 flex items-center space-x-2 flex-wrap">
                 <span>Triggered via</span>
-                <span className="font-mono uppercase text-white/90 bg-white/[0.04] px-2 py-0.5 rounded border border-white/10">
+                <span className="font-mono uppercase text-[#c9d1d9] bg-[#0d1117] px-1.5 py-0.2 rounded border border-[#30363d]">
                   {run.event_type}
                 </span>
                 <span>on branch</span>
-                <span className="font-mono text-indigo-400">{run.branch}</span>
+                <span className="font-mono text-[#58a6ff]">{run.branch}</span>
               </p>
             </div>
 
             <div className="text-left sm:text-right text-xs font-mono text-[#8b949e] space-y-1">
               <div>
                 Commit:{" "}
-                <span className="text-indigo-400 font-semibold">
+                <span className="text-[#58a6ff]">
                   {run.commit_sha ? run.commit_sha.substring(0, 7) : "HEAD"}
                 </span>
               </div>
               <div>
                 Execution Time:{" "}
-                <span className="text-white/90">{run.duration_ms} ms</span>
+                <span className="text-[#c9d1d9]">{run.duration_ms} ms</span>
               </div>
               <div>
                 Timestamp: {new Date(run.created_at).toLocaleString()}
@@ -167,11 +167,11 @@ export default function RunDetailsPage() {
             </div>
           </div>
 
-          <div className="p-5 bg-black/20">
-            <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-1">
+          <div className="p-4 bg-[#0d1117]/60">
+            <span className="text-[11px] font-semibold text-[#8b949e] uppercase tracking-wider block mb-1">
               Verification Summary:
             </span>
-            <p className="text-xs text-white/90 font-mono leading-relaxed">
+            <p className="text-xs text-[#c9d1d9] font-mono leading-relaxed">
               {run.summary || "No execution summary available."}
             </p>
           </div>
@@ -179,9 +179,9 @@ export default function RunDetailsPage() {
 
         {/* Findings Section */}
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-3">
             <div>
-              <h2 className="text-sm font-semibold text-white">
+              <h2 className="text-sm font-semibold text-[#f0f6fc]">
                 Evaluated Invariant Findings ({findings.length})
               </h2>
               <p className="text-xs text-[#8b949e]">
@@ -189,11 +189,11 @@ export default function RunDetailsPage() {
               </p>
             </div>
 
-            <div className="flex items-center space-x-2.5">
+            <div className="flex items-center space-x-2">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 glass-input rounded-xl text-xs font-mono text-white/90 focus:outline-none"
+                className="px-2 py-1 bg-[#0d1117] border border-[#30363d] rounded text-xs font-mono text-[#c9d1d9] focus:outline-none focus:border-[#58a6ff]"
               >
                 <option value="ALL">Status: All</option>
                 <option value="VERIFIED_FAILURE">Failures Only</option>
@@ -205,7 +205,7 @@ export default function RunDetailsPage() {
               <select
                 value={severityFilter}
                 onChange={(e) => setSeverityFilter(e.target.value)}
-                className="px-3 py-1.5 glass-input rounded-xl text-xs font-mono text-white/90 focus:outline-none"
+                className="px-2 py-1 bg-[#0d1117] border border-[#30363d] rounded text-xs font-mono text-[#c9d1d9] focus:outline-none focus:border-[#58a6ff]"
               >
                 <option value="ALL">Severity: All</option>
                 <option value="CRITICAL">Critical</option>
@@ -217,11 +217,9 @@ export default function RunDetailsPage() {
           </div>
 
           {filteredFindings.length === 0 ? (
-            <div className="p-16 text-center liquid-glass rounded-2xl space-y-3">
-              <span className="w-10 h-10 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-lg mx-auto shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-                ✔
-              </span>
-              <p className="text-sm font-semibold text-white">
+            <div className="p-12 text-center border border-[#30363d] rounded-md bg-[#161b22] space-y-2">
+              <span className="text-[#3fb950] text-2xl font-bold">✔</span>
+              <p className="text-sm font-semibold text-[#f0f6fc]">
                 {findings.length === 0
                   ? "Zero Invariant Violations Detected"
                   : "No Findings Match Current Filter"}

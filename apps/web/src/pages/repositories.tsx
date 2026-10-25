@@ -34,9 +34,9 @@ export default function RepositoriesPage() {
       </Head>
 
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold liquid-title">
+            <h1 className="text-xl font-bold text-[#f0f6fc]">
               Connected Repositories
             </h1>
             <p className="text-xs text-[#8b949e] mt-1">
@@ -45,37 +45,31 @@ export default function RepositoriesPage() {
           </div>
           <button
             onClick={() => setIsTriggerOpen(true)}
-            className="self-start sm:self-auto px-4 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white border border-emerald-400/30 shadow-[0_4px_18px_rgba(16,185,129,0.35)] transition-all"
+            className="btn-apple-liquid btn-apple-green self-start sm:self-auto px-3.5 py-1.5 text-xs font-semibold"
           >
             + Run Verification
           </button>
         </div>
 
         {loading ? (
-          <div className="p-16 text-center text-[#8b949e] liquid-glass rounded-2xl font-mono text-xs space-y-2">
-            <span className="animate-spin inline-block mr-2 text-indigo-400 text-base">↻</span>
-            <div>Loading repositories from backend...</div>
+          <div className="p-12 text-center text-[#8b949e] border border-[#30363d] rounded-md bg-[#161b22] font-mono text-xs">
+            <span className="animate-spin inline-block mr-2">↻</span>
+            Loading repositories from backend...
           </div>
         ) : errorMsg ? (
-          <div className="p-6 text-xs font-mono bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-2xl space-y-2 backdrop-blur-md">
-            <div className="font-bold flex items-center space-x-2">
-              <span>⛔</span>
-              <span>Backend Error:</span>
-            </div>
+          <div className="p-5 text-xs font-mono bg-[#da3633]/15 border border-[#da3633]/40 text-[#f85149] rounded-md space-y-2">
+            <div className="font-bold">Backend Error:</div>
             <div>{errorMsg}</div>
             <button
               onClick={loadRepos}
-              className="mt-2 px-3 py-1.5 bg-white/[0.05] border border-white/10 rounded-lg text-white hover:bg-white/[0.1] transition-all"
+              className="mt-2 btn-apple-liquid btn-apple-secondary px-3 py-1 text-xs"
             >
               ↻ Retry
             </button>
           </div>
         ) : repositories.length === 0 ? (
-          <div className="p-16 text-center liquid-glass rounded-2xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl mx-auto shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-              📁
-            </div>
-            <p className="text-base font-semibold text-white">
+          <div className="p-12 text-center border border-[#30363d] rounded-md bg-[#161b22] space-y-3">
+            <p className="text-sm font-semibold text-[#f0f6fc]">
               No repositories found in backend database.
             </p>
             <p className="text-xs text-[#8b949e] max-w-md mx-auto">
@@ -83,7 +77,7 @@ export default function RepositoriesPage() {
             </p>
             <button
               onClick={() => setIsTriggerOpen(true)}
-              className="px-4 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white border border-emerald-400/30 shadow-[0_4px_18px_rgba(16,185,129,0.35)] transition-all"
+              className="btn-apple-liquid btn-apple-green px-3.5 py-1.5 text-xs"
             >
               ▶ Trigger Run on Workspace
             </button>
@@ -93,51 +87,51 @@ export default function RepositoriesPage() {
             {repositories.map((repo) => (
               <div
                 key={repo.id}
-                className="liquid-glass liquid-glass-interactive rounded-2xl p-6 space-y-4"
+                className="border border-[#30363d] rounded-md bg-[#161b22] p-5 space-y-4 hover:border-[#58a6ff]/50 transition-colors"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center space-x-2.5 flex-wrap">
-                      <span className="text-base font-semibold text-white hover:text-indigo-300 transition-colors cursor-pointer">
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-semibold text-[#58a6ff] hover:underline cursor-pointer">
                         {repo.full_name}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/10 bg-white/[0.04] text-[#8b949e]">
+                      <span className="text-[11px] px-1.5 py-0.2 rounded-full border border-[#30363d] text-[#8b949e]">
                         Public
                       </span>
-                      <span className="text-xs font-mono text-indigo-300 bg-white/[0.04] px-2.5 py-0.5 rounded-md border border-white/10">
+                      <span className="text-xs font-mono text-[#8b949e] bg-[#0d1117] px-2 py-0.5 rounded border border-[#30363d]">
                         Branch: {repo.default_branch}
                       </span>
                     </div>
                     <p className="text-xs text-[#8b949e]">
-                      Continuous invariant rules configured in <code className="text-white/80">INVARIANT.md</code>.
+                      Continuous invariant rules configured in <code className="text-[#c9d1d9]">INVARIANT.md</code>.
                     </p>
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <Link
                       href="/"
-                      className="px-3.5 py-1.5 text-xs font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] transition-all"
+                      className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs"
                     >
-                      View Runs &rarr;
+                      View Runs
                     </Link>
                   </div>
                 </div>
 
                 {repo.recent_runs && repo.recent_runs.length > 0 && (
-                  <div className="border-t border-white/[0.06] pt-3.5 space-y-2">
-                    <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block">
+                  <div className="border-t border-[#30363d] pt-3 space-y-2">
+                    <span className="text-[11px] font-semibold text-[#8b949e] uppercase tracking-wider block">
                       Recent Verification Runs:
                     </span>
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {repo.recent_runs.map((r) => (
                         <div
                           key={r.id}
-                          className="flex items-center justify-between text-xs font-mono bg-white/[0.02] p-2.5 rounded-xl border border-white/5"
+                          className="flex items-center justify-between text-xs font-mono bg-[#0d1117] p-2 rounded border border-[#30363d]"
                         >
                           <div className="flex items-center space-x-2">
-                            <span className="text-indigo-400 font-semibold">{r.id}</span>
-                            <span className="text-white/40">{r.commit_sha.substring(0, 7)}</span>
-                            <span className="text-white/40">({r.branch})</span>
+                            <span className="text-[#58a6ff]">{r.id}</span>
+                            <span className="text-[#8b949e]">{r.commit_sha.substring(0, 7)}</span>
+                            <span className="text-[#8b949e]">({r.branch})</span>
                           </div>
                           <StatusBadge status={r.status} size="sm" />
                         </div>

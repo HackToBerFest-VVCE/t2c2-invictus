@@ -11,13 +11,13 @@ export default function DashboardPage() {
   const [branchFilter, setBranchFilter] = useState("ALL");
   const [isTriggerOpen, setIsTriggerOpen] = useState(false);
 
-  // Compute metrics from actual runs returned by the backend
+  // Compute metrics from actual runs returned by backend
   const totalRuns = runs.length;
   const passedRuns = runs.filter((r) => r.status === "VERIFIED_PASS").length;
   const failedRuns = runs.filter((r) => r.status === "VERIFIED_FAILURE").length;
   const aiHypothesisRuns = runs.filter((r) => r.status === "AI_HYPOTHESIS").length;
 
-  // Extract unique branches from real data
+  // Extract unique branches
   const uniqueBranches = useMemo(() => {
     const set = new Set<string>();
     runs.forEach((r) => {
@@ -26,7 +26,7 @@ export default function DashboardPage() {
     return Array.from(set);
   }, [runs]);
 
-  // Filter runs based on user query
+  // Filter runs based on search & filter
   const filteredRuns = useMemo(() => {
     return runs.filter((run) => {
       const matchesSearch =
@@ -56,34 +56,29 @@ export default function DashboardPage() {
         />
       </Head>
 
-      <div className="space-y-7">
-        {/* Hero Section with Liquid Glass Title */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-1">
+      <div className="space-y-6">
+        {/* Header Hero */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-5">
           <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-mono mb-2 shadow-[0_0_12px_rgba(99,102,241,0.25)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-              <span>Continuous Invariant Verification Platform</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight liquid-title">
+            <h1 className="text-2xl font-bold text-[#f0f6fc]">
               Verification Dashboard
             </h1>
-            <p className="text-xs sm:text-sm text-[#8b949e] mt-1 max-w-xl">
-              Assert declarative requirements across every commit and pull request with isolated sandboxing and empirical proof.
+            <p className="text-sm text-[#8b949e] mt-1">
+              Active repository invariants enforced continuously against every commit.
             </p>
           </div>
 
           <div className="flex items-center space-x-2.5">
             <button
               onClick={refresh}
-              className="px-3.5 py-2 text-xs font-medium rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/90 transition-all flex items-center space-x-1.5 shadow-sm"
-              title="Refresh from backend"
+              className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs space-x-1"
             >
               <span>↻</span>
               <span>Refresh</span>
             </button>
             <button
               onClick={() => setIsTriggerOpen(true)}
-              className="px-4 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white border border-emerald-400/30 shadow-[0_4px_20px_rgba(16,185,129,0.35)] transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center space-x-1.5"
+              className="btn-apple-liquid btn-apple-green px-3.5 py-1.5 text-xs space-x-1"
             >
               <span>▶</span>
               <span>Run Verification</span>
@@ -91,81 +86,61 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Liquid Glass Metric Cards Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Total */}
-          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
-            <div className="text-xs font-mono text-white/60 flex items-center justify-between">
-              <span>TOTAL RUNS</span>
-              <span className="w-6 h-6 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center text-indigo-400 font-bold">
-                #
-              </span>
-            </div>
-            <div className="text-3xl font-extrabold font-mono text-white mt-2">
+        {/* 4 Stat Cards (Clean GitHub style) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="p-4 rounded-md border border-[#30363d] bg-[#161b22]">
+            <span className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider block">
+              Total Runs
+            </span>
+            <div className="text-2xl font-bold font-mono text-[#f0f6fc] mt-1.5">
               {totalRuns}
             </div>
-            <div className="text-[11px] text-white/50 mt-1">Monitored commits</div>
+            <div className="text-[11px] text-[#8b949e] mt-1">Evaluated commits</div>
           </div>
 
-          {/* Card 2: Passes */}
-          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5 relative overflow-hidden group hover:border-emerald-500/40">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
-            <div className="text-xs font-mono text-emerald-400 flex items-center justify-between">
-              <span>VERIFIED PASSES</span>
-              <span className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold shadow-[0_0_10px_rgba(52,211,153,0.3)]">
-                ✔
-              </span>
-            </div>
-            <div className="text-3xl font-extrabold font-mono text-emerald-400 mt-2">
+          <div className="p-4 rounded-md border border-[#238636]/40 bg-[#238636]/10">
+            <span className="text-xs font-semibold text-[#3fb950] uppercase tracking-wider block">
+              Verified Passes
+            </span>
+            <div className="text-2xl font-bold font-mono text-[#3fb950] mt-1.5">
               {passedRuns}
             </div>
-            <div className="text-[11px] text-emerald-400/70 mt-1">Assertions upheld</div>
+            <div className="text-[11px] text-[#3fb950]/80 mt-1">100% assertions upheld</div>
           </div>
 
-          {/* Card 3: Failures */}
-          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5 relative overflow-hidden group hover:border-rose-500/40">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/15 rounded-full blur-2xl pointer-events-none" />
-            <div className="text-xs font-mono text-rose-400 flex items-center justify-between">
-              <span>VIOLATIONS / FAILS</span>
-              <span className="w-6 h-6 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 font-bold shadow-[0_0_10px_rgba(244,63,94,0.3)]">
-                ✖
-              </span>
-            </div>
-            <div className="text-3xl font-extrabold font-mono text-rose-400 mt-2">
+          <div className="p-4 rounded-md border border-[#da3633]/40 bg-[#da3633]/10">
+            <span className="text-xs font-semibold text-[#f85149] uppercase tracking-wider block">
+              Verified Failures
+            </span>
+            <div className="text-2xl font-bold font-mono text-[#f85149] mt-1.5">
               {failedRuns}
             </div>
-            <div className="text-[11px] text-rose-400/70 mt-1">Blocking violations</div>
+            <div className="text-[11px] text-[#f85149]/80 mt-1">Blocking violations</div>
           </div>
 
-          {/* Card 4: AI Hypotheses */}
-          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5 relative overflow-hidden group hover:border-purple-500/40">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/15 rounded-full blur-2xl pointer-events-none" />
-            <div className="text-xs font-mono text-purple-300 flex items-center justify-between">
-              <span>AI HYPOTHESES</span>
-              <span className="w-6 h-6 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-300 font-bold shadow-[0_0_10px_rgba(168,85,247,0.3)]">
-                ✦
-              </span>
-            </div>
-            <div className="text-3xl font-extrabold font-mono text-purple-300 mt-2">
+          <div className="p-4 rounded-md border border-[#bc8cff]/40 bg-[#bc8cff]/10">
+            <span className="text-xs font-semibold text-[#bc8cff] uppercase tracking-wider block">
+              AI Hypotheses
+            </span>
+            <div className="text-2xl font-bold font-mono text-[#bc8cff] mt-1.5">
               {aiHypothesisRuns}
             </div>
-            <div className="text-[11px] text-purple-300/70 mt-1">Speculative advisories</div>
+            <div className="text-[11px] text-[#bc8cff]/80 mt-1">Advisory signals</div>
           </div>
         </div>
 
-        {/* Liquid Glass Filter and Search Bar */}
-        <div className="liquid-glass rounded-2xl p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+        {/* Search & Filter Bar */}
+        <div className="p-3 rounded-md border border-[#30363d] bg-[#161b22] flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <div className="relative flex-1">
               <input
                 type="text"
                 placeholder="Filter by commit SHA, branch, or summary..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2 glass-input rounded-xl font-mono text-xs text-[#c9d1d9] placeholder-white/30 focus:outline-none transition-all"
+                className="w-full pl-8 pr-3 py-1.5 bg-[#0d1117] border border-[#30363d] rounded-md font-mono text-xs text-[#c9d1d9] placeholder-[#8b949e] focus:outline-none focus:border-[#58a6ff]"
               />
-              <span className="absolute left-3 top-2.5 text-white/40 text-xs">
+              <span className="absolute left-2.5 top-2 text-[#8b949e] text-xs">
                 🔍
               </span>
             </div>
@@ -173,7 +148,7 @@ export default function DashboardPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 glass-input rounded-xl font-mono text-xs text-white/90 focus:outline-none transition-all"
+              className="px-2.5 py-1.5 bg-[#0d1117] border border-[#30363d] rounded-md font-mono text-xs text-[#c9d1d9] focus:outline-none focus:border-[#58a6ff]"
             >
               <option value="ALL">Status: All</option>
               <option value="VERIFIED_PASS">Status: Verified Pass</option>
@@ -186,7 +161,7 @@ export default function DashboardPage() {
               <select
                 value={branchFilter}
                 onChange={(e) => setBranchFilter(e.target.value)}
-                className="px-3 py-2 glass-input rounded-xl font-mono text-xs text-white/90 focus:outline-none transition-all"
+                className="px-2.5 py-1.5 bg-[#0d1117] border border-[#30363d] rounded-md font-mono text-xs text-[#c9d1d9] focus:outline-none focus:border-[#58a6ff]"
               >
                 <option value="ALL">Branch: All</option>
                 {uniqueBranches.map((b) => (
@@ -199,62 +174,54 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Runs List */}
-        <div className="space-y-3.5">
+        {/* Verification Runs List */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-[#8b949e]">
-            <span className="font-semibold text-white/90">
+            <span className="font-semibold text-[#f0f6fc]">
               Verification Runs ({filteredRuns.length})
             </span>
-            <span className="font-mono text-[11px]">Live records from FastAPI backend</span>
+            <span>Live records from FastAPI backend</span>
           </div>
 
           {loading ? (
-            <div className="p-16 text-center text-[#8b949e] liquid-glass rounded-2xl font-mono text-xs space-y-2">
-              <span className="animate-spin inline-block mr-2 text-indigo-400 text-base">↻</span>
-              <div>Connecting to FastAPI backend (http://localhost:8000)...</div>
+            <div className="p-12 text-center text-[#8b949e] border border-[#30363d] rounded-md bg-[#161b22] font-mono text-xs">
+              <span className="animate-spin inline-block mr-2">↻</span>
+              Connecting to FastAPI backend (http://localhost:8000)...
             </div>
           ) : error ? (
-            <div className="p-6 text-xs font-mono bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-2xl space-y-2 backdrop-blur-md">
-              <div className="font-bold flex items-center space-x-2">
-                <span>⛔</span>
-                <span>Backend Connection Notice:</span>
-              </div>
-              <div className="text-white/80">{error}</div>
+            <div className="p-5 text-xs font-mono bg-[#da3633]/15 border border-[#da3633]/40 text-[#f85149] rounded-md space-y-2">
+              <div className="font-bold">Backend Connection Notice:</div>
+              <div>{error}</div>
               <div className="text-[#c9d1d9] text-[11px] pt-1">
-                To connect to live verification data, start the FastAPI service:
-                <code className="block mt-1.5 p-3 rounded-lg bg-[#070b13]/90 border border-white/10 text-indigo-300 font-mono shadow-inner">
+                To connect to live data, start the FastAPI service:
+                <code className="block mt-1 p-2 rounded bg-[#0d1117] border border-[#30363d] text-[#58a6ff]">
                   python -m uvicorn services.api.app.main:app --host 0.0.0.0 --port 8000 --reload
                 </code>
               </div>
               <button
                 onClick={refresh}
-                className="mt-3 px-3.5 py-1.5 bg-white/[0.05] border border-white/10 text-white rounded-lg hover:bg-white/[0.1] transition-all"
+                className="mt-2 btn-apple-liquid btn-apple-secondary px-3 py-1 text-xs"
               >
                 ↻ Retry Connection
               </button>
             </div>
           ) : filteredRuns.length === 0 ? (
-            <div className="p-16 text-center liquid-glass rounded-2xl space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl mx-auto shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-                ✦
-              </div>
-              <div className="space-y-1">
-                <p className="text-base font-semibold text-white">
-                  No verification runs recorded yet.
-                </p>
-                <p className="text-xs text-[#8b949e] max-w-md mx-auto">
-                  Trigger an automated verification run using the button below or submit a pull request with an <code className="text-indigo-400">INVARIANT.md</code> specification.
-                </p>
-              </div>
+            <div className="p-12 text-center border border-[#30363d] rounded-md bg-[#161b22] space-y-3">
+              <p className="text-sm font-semibold text-[#f0f6fc]">
+                No verification runs recorded yet.
+              </p>
+              <p className="text-xs text-[#8b949e] max-w-md mx-auto">
+                Trigger an automated verification run using the button below or submit a pull request with an <code className="text-[#58a6ff]">INVARIANT.md</code> file.
+              </p>
               <button
                 onClick={() => setIsTriggerOpen(true)}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white border border-emerald-400/30 shadow-[0_4px_18px_rgba(16,185,129,0.35)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="btn-apple-liquid btn-apple-green px-4 py-2 text-xs"
               >
                 ▶ Trigger First Verification Run
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {filteredRuns.map((run) => (
                 <RunCard key={run.id} run={run} />
               ))}
