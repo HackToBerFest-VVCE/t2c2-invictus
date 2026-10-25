@@ -1,0 +1,37 @@
+name: "Invariant Verification"
+description: "Verify repository code against declarative behavioral specifications declared in INVARIANT.md"
+author: "Invariant Contributors (Team INVICTUS)"
+
+inputs:
+  spec_file:
+    description: "Path to the INVARIANT.md specification file"
+    required: false
+    default: "INVARIANT.md"
+  fail_on_violation:
+    description: "Whether to fail the CI job if an invariant failure is verified"
+    required: false
+    default: "true"
+  output_format:
+    description: "Format for verification report (markdown, json)"
+    required: false
+    default: "markdown"
+
+outputs:
+  status:
+    description: "Overall verification status (VERIFIED_PASS, VERIFIED_FAILURE, etc.)"
+    value: ${{ steps.run-verifier.outputs.status }}
+  report_markdown:
+    description: "Markdown verification report summary"
+    value: ${{ steps.run-verifier.outputs.report_markdown }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Invariant Verification Runner
+      id: run-verifier
+      shell: bash
+      run: |
+        python -m packages.verifier.cli \
+          --spec "${{ inputs.spec_file }}" \
+          --fail-on-violation "${{ inputs.fail_on_violation }}" \
+          --format "${{ inputs.output_format }}"

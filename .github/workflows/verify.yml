@@ -1,0 +1,32 @@
+name: Invariant Continuous Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify-invariants:
+    name: Verify Invariants Against INVARIANT.md
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest -r services/api/requirements.txt
+
+      - name: Execute Invariant Verification Action
+        uses: ./actions/verify
+        with:
+          spec_file: INVARIANT.md
+          fail_on_violation: true
