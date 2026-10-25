@@ -279,6 +279,7 @@ Invariant/
 │   ├── ISSUE_TEMPLATE/           # Bug report and feature request templates
 │   └── PULL_REQUEST_TEMPLATE.md
 ├── README.md                     # Main documentation entrypoint
+├── HOW-TO-USE.md                 # User guide: Connecting repos, defining rules, inspecting runs
 ├── INVARIANT.md                  # Invariant specification for the platform
 ├── CONTRIBUTING.md               # Standard contributor guide
 ├── SECURITY.md                   # Security policy & vulnerability reporting
@@ -311,6 +312,7 @@ Every technical document in the [`docs/`](docs/) directory covers a dedicated ar
 
 | Document | Purpose & Description |
 | :--- | :--- |
+| [`HOW-TO-USE.md`](HOW-TO-USE.md) | Practical step-by-step user guide for connecting repositories, defining rules in `INVARIANT.md`, submitting PRs, and reviewing findings. |
 | [`INVARIANT.md`](INVARIANT.md) | Declarative behavioral specification defining invariants (`INV-01` to `INV-04`), API contracts, edge cases, and failure expectations for Invariant. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contributor setup, development workflow, testing requirements, and PR guidance. |
 | [`SECURITY.md`](SECURITY.md) | Security policy, vulnerability reporting SLA, and architectural controls. |
