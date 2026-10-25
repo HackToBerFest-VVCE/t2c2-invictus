@@ -7,6 +7,7 @@ from typing import List, Optional, Dict, Any
 @dataclass
 class SpecMetadata:
     """Metadata extracted from the specification frontmatter or headers."""
+
     spec_version: str = "1.0.0"
     target_system: str = "Unknown System"
     status: str = "Active"
@@ -17,6 +18,7 @@ class SpecMetadata:
 @dataclass
 class InvariantRule:
     """Represents a discrete invariant rule defined in the specification."""
+
     id: str
     title: str
     rule_statement: str
@@ -29,6 +31,7 @@ class InvariantRule:
 @dataclass
 class APIContract:
     """Represents an API contract definition."""
+
     name: str
     endpoint: Optional[str] = None
     pre_conditions: List[str] = field(default_factory=list)
@@ -39,6 +42,7 @@ class APIContract:
 @dataclass
 class EdgeCase:
     """Represents a declared boundary or edge-case scenario."""
+
     id: str
     title: str
     description: str
@@ -48,6 +52,7 @@ class EdgeCase:
 @dataclass
 class FailureMode:
     """Represents an expected error handling scenario."""
+
     trigger: str
     expected_status: str
     error_code: str
@@ -57,6 +62,7 @@ class FailureMode:
 @dataclass
 class InvariantSpec:
     """Complete parsed Invariant specification."""
+
     metadata: SpecMetadata
     project_overview: str = ""
     invariants: List[InvariantRule] = field(default_factory=list)

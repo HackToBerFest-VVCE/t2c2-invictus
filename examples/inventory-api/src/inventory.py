@@ -3,31 +3,36 @@
 import threading
 import uuid
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict
 
 
 class InventoryError(Exception):
     """Base exception for inventory operations."""
+
     pass
 
 
 class InsufficientStockError(InventoryError):
     """Raised when an operation requests more stock than currently available."""
+
     pass
 
 
 class InvalidQuantityError(InventoryError):
     """Raised when a non-positive or invalid quantity is supplied."""
+
     pass
 
 
 class ItemNotFoundError(InventoryError):
     """Raised when the specified item does not exist."""
+
     pass
 
 
 class ReservationNotFoundError(InventoryError):
     """Raised when the specified reservation does not exist."""
+
     pass
 
 
@@ -76,7 +81,9 @@ class InventoryService:
     def reserve_stock(self, item_id: str, quantity: int) -> str:
         """Reserve stock units for an item, enforcing non-negative balance (INV-01)."""
         if quantity <= 0:
-            raise InvalidQuantityError("Reservation quantity must be strictly positive.")
+            raise InvalidQuantityError(
+                "Reservation quantity must be strictly positive."
+            )
 
         with self._lock:
             if item_id not in self._items:
@@ -94,7 +101,9 @@ class InventoryService:
             item.reserved_stock += quantity
 
             # Invariant check: INV-01
-            assert item.available_stock >= 0, "Invariant violation: stock dropped below zero!"
+            assert (
+                item.available_stock >= 0
+            ), "Invariant violation: stock dropped below zero!"
 
             res_id = f"res_{uuid.uuid4().hex[:8]}"
             self._reservations[res_id] = Reservation(
@@ -130,11 +139,15 @@ class InventoryService:
         """Fulfill a reserved order."""
         with self._lock:
             if reservation_id not in self._reservations:
-                raise ReservationNotFoundError(f"Reservation '{reservation_id}' not found.")
+                raise ReservationNotFoundError(
+                    f"Reservation '{reservation_id}' not found."
+                )
 
             res = self._reservations[reservation_id]
             if res.status != "PENDING":
-                raise InventoryError(f"Cannot fulfill reservation in state {res.status}")
+                raise InventoryError(
+                    f"Cannot fulfill reservation in state {res.status}"
+                )
 
             item = self._items[res.item_id]
             item.reserved_stock -= res.quantity

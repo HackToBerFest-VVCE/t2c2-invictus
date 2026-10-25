@@ -59,7 +59,9 @@ async def handle_github_webhook(
 
     repo_data = payload.get("repository", {})
     repo_name = repo_data.get("name", "unknown_repo")
-    commit_sha = payload.get("after") or payload.get("head_commit", {}).get("id", "HEAD")
+    commit_sha = payload.get("after") or payload.get("head_commit", {}).get(
+        "id", "HEAD"
+    )
     branch = payload.get("ref", "refs/heads/main").replace("refs/heads/", "")
 
     # Dispatch Verification

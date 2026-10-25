@@ -27,7 +27,9 @@ def test_list_runs_endpoint(client: TestClient) -> None:
     assert isinstance(response.json(), list)
 
 
-def test_webhook_unauthorized_when_signature_missing_or_invalid(client: TestClient) -> None:
+def test_webhook_unauthorized_when_signature_missing_or_invalid(
+    client: TestClient,
+) -> None:
     original_secret = settings.github_webhook_secret
     try:
         settings.github_webhook_secret = "test_active_secret"

@@ -3,7 +3,7 @@
 import hashlib
 import hmac
 import time
-from typing import Set, Dict
+from typing import Dict
 
 
 class DeliveryDeduplicator:
@@ -41,7 +41,7 @@ def verify_github_signature(
     payload_bytes: bytes, signature_header: str, secret: str
 ) -> bool:
     """Validate GitHub webhook HMAC-SHA256 signature using constant-time comparison.
-    
+
     CRITICAL INVARIANT (INV-02):
     Validates request payload before executing any runner jobs or reading repo files.
     """

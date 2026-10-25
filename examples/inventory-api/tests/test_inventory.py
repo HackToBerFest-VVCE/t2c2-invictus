@@ -11,11 +11,10 @@ parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from src.inventory import (
+from src.inventory import (  # noqa: E402
     InventoryService,
     InsufficientStockError,
     InvalidQuantityError,
-    ItemNotFoundError,
 )
 
 
@@ -53,18 +52,24 @@ def test_inv_02_conservation_of_inventory(service: InventoryService) -> None:
     # 1. Reserve 4 units
     r1 = service.reserve_stock("item-101", 4)
     assert item.total_stock == initial_total
-    assert item.total_stock == (item.available_stock + item.reserved_stock + item.fulfilled_stock)
+    assert item.total_stock == (
+        item.available_stock + item.reserved_stock + item.fulfilled_stock
+    )
 
     # 2. Fulfill 4 units
     service.fulfill_reservation(r1)
     assert item.total_stock == initial_total
-    assert item.total_stock == (item.available_stock + item.reserved_stock + item.fulfilled_stock)
+    assert item.total_stock == (
+        item.available_stock + item.reserved_stock + item.fulfilled_stock
+    )
 
     # 3. Reserve 3 units and cancel
     r2 = service.reserve_stock("item-101", 3)
     service.cancel_reservation(r2)
     assert item.total_stock == initial_total
-    assert item.total_stock == (item.available_stock + item.reserved_stock + item.fulfilled_stock)
+    assert item.total_stock == (
+        item.available_stock + item.reserved_stock + item.fulfilled_stock
+    )
 
 
 def test_inv_03_idempotent_cancellation(service: InventoryService) -> None:

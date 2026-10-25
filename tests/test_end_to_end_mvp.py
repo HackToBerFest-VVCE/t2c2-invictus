@@ -37,7 +37,9 @@ def test_end_to_end_verification_pipeline() -> None:
 
         # Verify AI hypotheses were generated without overriding test pass
         assert report.hypothesis_count > 0
-        hyp_findings = [f for f in report.findings if f.status == VerificationStatus.AI_HYPOTHESIS]
+        hyp_findings = [
+            f for f in report.findings if f.status == VerificationStatus.AI_HYPOTHESIS
+        ]
         assert len(hyp_findings) > 0
         for hyp in hyp_findings:
             assert hyp.ai_assisted is True
@@ -46,6 +48,7 @@ def test_end_to_end_verification_pipeline() -> None:
 
         # Verify database persistence
         from services.api.app.models.models import VerificationRunDB, FindingDB
+
         db_run = db.query(VerificationRunDB).filter_by(id=report.run_id).first()
         assert db_run is not None
         assert db_run.status == "VERIFIED_PASS"

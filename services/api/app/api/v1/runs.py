@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ...core.database import get_db
-from ...models.models import VerificationRunDB, FindingDB, RepositoryDB
+from ...models.models import VerificationRunDB, RepositoryDB
 from ...schemas.schemas import (
     VerificationRunResponse,
     ManualTriggerRequest,
@@ -30,7 +30,9 @@ def list_repositories(db: Session = Depends(get_db)) -> List[RepositoryResponse]
             .all()
         )
         r_resp = RepositoryResponse.from_orm(r)
-        r_resp.recent_runs = [VerificationRunResponse.from_orm(run) for run in recent_runs]
+        r_resp.recent_runs = [
+            VerificationRunResponse.from_orm(run) for run in recent_runs
+        ]
         results.append(r_resp)
     return results
 

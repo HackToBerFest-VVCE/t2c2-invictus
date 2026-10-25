@@ -23,8 +23,15 @@ class MarkdownReportGenerator:
             f"# Invariant Verification Report: `{report.run_id}`",
             "",
             f"**Overall Status**: `{status_badge}`",
-            f"**Duration**: {report.duration_ms} ms | **Invariants Tracked**: {report.invariants_evaluated}",
-            f"**Passed Tests**: {report.passed_count} | **Failed Tests**: {report.failed_count} | **AI Hypotheses**: {report.hypothesis_count}",
+            (
+                f"**Duration**: {report.duration_ms} ms | "
+                f"**Invariants Tracked**: {report.invariants_evaluated}"
+            ),
+            (
+                f"**Passed Tests**: {report.passed_count} | "
+                f"**Failed Tests**: {report.failed_count} | "
+                f"**AI Hypotheses**: {report.hypothesis_count}"
+            ),
             "",
             f"> {report.summary}",
             "",
@@ -35,19 +42,24 @@ class MarkdownReportGenerator:
         ]
 
         if not report.findings:
-            lines.append("No issues or invariant violations detected. All checks passed.")
+            lines.append(
+                "No issues or invariant violations detected. All checks passed."
+            )
             return "\n".join(lines)
 
-        lines.extend([
-            "| ID | Title | Invariant | Severity | Status | Origin |",
-            "| :--- | :--- | :--- | :--- | :--- | :--- |",
-        ])
+        lines.extend(
+            [
+                "| ID | Title | Invariant | Severity | Status | Origin |",
+                "| :--- | :--- | :--- | :--- | :--- | :--- |",
+            ]
+        )
 
         for f in report.findings:
             origin = "AI Hypothesis" if f.ai_assisted else "Runner Evidence"
             inv_ref = f.invariant_id or "N/A"
             lines.append(
-                f"| `{f.finding_id}` | {f.title} | `{inv_ref}` | **{f.severity}** | `{f.status.value}` | {origin} |"
+                f"| `{f.finding_id}` | {f.title} | `{inv_ref}` | "
+                f"**{f.severity}** | `{f.status.value}` | {origin} |"
             )
 
         lines.append("")
@@ -55,21 +67,27 @@ class MarkdownReportGenerator:
         lines.append("")
 
         for f in report.findings:
-            lines.extend([
-                f"### Finding: {f.title} (`{f.finding_id}`)",
-                f"* **Status**: `{f.status.value}`",
-                f"* **Severity**: {f.severity}",
-                f"* **Associated Invariant**: {f.invariant_id or 'None'}",
-            ])
+            lines.extend(
+                [
+                    f"### Finding: {f.title} (`{f.finding_id}`)",
+                    f"* **Status**: `{f.status.value}`",
+                    f"* **Severity**: {f.severity}",
+                    f"* **Associated Invariant**: {f.invariant_id or 'None'}",
+                ]
+            )
             if f.reproduction_command:
-                lines.append(f"* **Reproduction / Test Input**: `{f.reproduction_command}`")
+                lines.append(
+                    f"* **Reproduction / Test Input**: `{f.reproduction_command}`"
+                )
             if f.execution_trace:
-                lines.extend([
-                    "* **Evidence Trace**:",
-                    "```",
-                    f.execution_trace.strip(),
-                    "```",
-                ])
+                lines.extend(
+                    [
+                        "* **Evidence Trace**:",
+                        "```",
+                        f.execution_trace.strip(),
+                        "```",
+                    ]
+                )
             lines.append("")
 
         return "\n".join(lines)
@@ -83,7 +101,9 @@ class JSONReportGenerator:
         # Convert enums to string
         report_dict["status"] = report.status.value
         for f in report_dict["findings"]:
-            f["status"] = f["status"].value if hasattr(f["status"], "value") else str(f["status"])
+            f["status"] = (
+                f["status"].value if hasattr(f["status"], "value") else str(f["status"])
+            )
         return json.dumps(report_dict, indent=2)
 
 
@@ -92,7 +112,9 @@ class GitHubIssueDraftGenerator:
 
     def generate(self, report: VerificationReport) -> str:
         failures = [
-            f for f in report.findings if f.status == VerificationStatus.VERIFIED_FAILURE
+            f
+            for f in report.findings
+            if f.status == VerificationStatus.VERIFIED_FAILURE
         ]
         if not failures:
             return ""

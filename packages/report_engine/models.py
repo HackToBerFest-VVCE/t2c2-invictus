@@ -8,6 +8,7 @@ from packages.verifier.models import VerificationStatus
 @dataclass
 class VerificationFinding:
     """Normalized finding representing a verification outcome."""
+
     finding_id: str
     title: str
     invariant_id: Optional[str]
@@ -25,6 +26,7 @@ class VerificationFinding:
 @dataclass
 class VerificationReport:
     """Consolidated verification report across an entire commit or pull request."""
+
     run_id: str
     status: VerificationStatus
     timestamp: str

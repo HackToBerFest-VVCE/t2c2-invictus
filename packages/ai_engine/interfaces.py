@@ -8,11 +8,12 @@ from typing import List, Optional, Dict, Any
 @dataclass
 class AIHypothesis:
     """Represents an AI-generated hypothesis or edge-case suggestion.
-    
+
     CRITICAL INVARIANT RULE (INV-03):
     An AIHypothesis is strictly advisory and non-authoritative. It must never be
     treated as a confirmed failure unless independently reproduced by an isolated runner.
     """
+
     id: str
     invariant_id: Optional[str]
     title: str
@@ -28,6 +29,7 @@ class AIHypothesis:
 @dataclass
 class AIRequestPayload:
     """Input payload sent to AI providers for edge-case derivation."""
+
     target_system: str
     invariants: List[Dict[str, Any]]
     diff_content: str = ""

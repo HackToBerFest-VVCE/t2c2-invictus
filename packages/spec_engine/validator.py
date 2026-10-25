@@ -19,18 +19,31 @@ class SpecValidator:
 
         for inv in spec.invariants:
             if not inv.id.startswith("INV-"):
-                issues.append(f"WARNING: Invariant ID '{inv.id}' does not follow naming convention INV-XX.")
+                issues.append(
+                    f"WARNING: Invariant ID '{inv.id}' does not follow naming convention INV-XX."
+                )
 
             if len(inv.rule_statement.split()) < 4:
-                issues.append(f"WARNING: Invariant '{inv.id}' rule statement is too brief or ambiguous.")
+                issues.append(
+                    f"WARNING: Invariant '{inv.id}' rule statement is too brief or ambiguous."
+                )
 
             # Check for vague terms
-            vague_words = ["fast", "good", "robust", "secure", "properly", "correctly", "normal"]
+            vague_words = [
+                "fast",
+                "good",
+                "robust",
+                "secure",
+                "properly",
+                "correctly",
+                "normal",
+            ]
             words = inv.rule_statement.lower().split()
             for vw in vague_words:
                 if vw in words and not inv.formal_assertion:
                     issues.append(
-                        f"NOTICE: Invariant '{inv.id}' uses subjective term '{vw}' without a formal assertion."
+                        f"NOTICE: Invariant '{inv.id}' uses subjective term "
+                        f"'{vw}' without a formal assertion."
                     )
 
         return issues

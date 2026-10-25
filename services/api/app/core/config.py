@@ -15,13 +15,13 @@ class Settings:
         self.host: str = os.getenv("INVARIANT_HOST", "0.0.0.0")
         self.port: int = int(os.getenv("INVARIANT_PORT", "8000"))
 
-        self.database_url: str = os.getenv(
-            "DATABASE_URL", "sqlite:///./invariant.db"
-        )
+        self.database_url: str = os.getenv("DATABASE_URL", "sqlite:///./invariant.db")
 
         self.github_webhook_secret: Optional[str] = os.getenv("GITHUB_WEBHOOK_SECRET")
         self.github_app_id: Optional[str] = os.getenv("GITHUB_APP_ID")
-        self.github_private_key_path: Optional[str] = os.getenv("GITHUB_PRIVATE_KEY_PATH")
+        self.github_private_key_path: Optional[str] = os.getenv(
+            "GITHUB_PRIVATE_KEY_PATH"
+        )
 
         self.runner_timeout_seconds: int = int(
             os.getenv("RUNNER_TIMEOUT_SECONDS", "300")

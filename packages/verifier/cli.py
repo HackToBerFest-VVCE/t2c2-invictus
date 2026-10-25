@@ -40,7 +40,9 @@ def main() -> None:
         print(f"[*] Parsing specification: {spec_path}")
         spec_parser = SpecParser()
         spec = spec_parser.parse_file(spec_path)
-        print(f"[+] Loaded {len(spec.invariants)} invariant(s), {len(spec.contracts)} contract(s)")
+        print(
+            f"[+] Loaded {len(spec.invariants)} invariant(s), {len(spec.contracts)} contract(s)"
+        )
     else:
         print(f"[!] Warning: Specification file not found at '{spec_path}'")
 
@@ -48,13 +50,13 @@ def main() -> None:
     print("[*] Running verification harnesses...")
     result = runner.auto_verify()
 
-    print(f"\n================ VERIFICATION RESULT ================")
+    print("\n================ VERIFICATION RESULT ================")
     print(f"Status:       {result.status.value}")
     print(f"Adapter:      {result.adapter_name}")
     print(f"Passed Tests: {result.passed_count}")
     print(f"Failed Tests: {result.failed_count}")
     print(f"Duration:     {result.evidence.duration_ms}ms")
-    print(f"=====================================================\n")
+    print("=====================================================\n")
 
     if result.status == VerificationStatus.VERIFIED_FAILURE:
         print("[!] Invariant verification FAILED with reproduced errors.")

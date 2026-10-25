@@ -29,12 +29,15 @@ class FindingNormalizer:
             for detail in test_result.failure_details:
                 test_name = detail.get("test_name", "Unknown Test")
                 trace = detail.get("trace", "")
-                
+
                 # Try to associate with an invariant ID from spec
                 matched_inv = None
                 if spec:
                     for inv in spec.invariants:
-                        if inv.id.lower() in test_name.lower() or inv.title.lower() in test_name.lower():
+                        if (
+                            inv.id.lower() in test_name.lower()
+                            or inv.title.lower() in test_name.lower()
+                        ):
                             matched_inv = inv
                             break
 
@@ -55,7 +58,10 @@ class FindingNormalizer:
                         ai_assisted=False,
                     )
                 )
-        elif test_result.status == VerificationStatus.VERIFIED_FAILURE and not test_result.failure_details:
+        elif (
+            test_result.status == VerificationStatus.VERIFIED_FAILURE
+            and not test_result.failure_details
+        ):
             findings.append(
                 VerificationFinding(
                     finding_id=f"FIND-{uuid.uuid4().hex[:6].upper()}",
@@ -63,9 +69,11 @@ class FindingNormalizer:
                     invariant_id=None,
                     severity="HIGH",
                     status=VerificationStatus.VERIFIED_FAILURE,
-                    actual_behavior=test_result.error_message or "Test harness returned non-zero exit code.",
+                    actual_behavior=test_result.error_message
+                    or "Test harness returned non-zero exit code.",
                     reproduction_command=test_result.evidence.reproduction_command,
-                    execution_trace=test_result.evidence.stderr or test_result.evidence.stdout,
+                    execution_trace=test_result.evidence.stderr
+                    or test_result.evidence.stdout,
                 )
             )
 
@@ -92,7 +100,9 @@ class FindingNormalizer:
             summary = f"Verification FAILED. {test_result.failed_count} test(s) failed."
         elif test_result.status == VerificationStatus.CHECK_ERROR:
             overall_status = VerificationStatus.CHECK_ERROR
-            summary = f"Verification check encountered an error: {test_result.error_message}"
+            summary = (
+                f"Verification check encountered an error: {test_result.error_message}"
+            )
         elif test_result.status == VerificationStatus.UNSUPPORTED:
             overall_status = VerificationStatus.UNSUPPORTED
             summary = "No supported test harness detected or zero tests collected."

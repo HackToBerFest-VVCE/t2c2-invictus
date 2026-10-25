@@ -1,7 +1,7 @@
 """Markdown parser for INVARIANT.md specification files."""
 
 import re
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple
 from .models import (
     InvariantSpec,
     SpecMetadata,
@@ -97,7 +97,9 @@ class SpecParser:
             return match.group(1).strip()
         return ""
 
-    def _extract_invariants(self, body: str, warnings: List[str]) -> List[InvariantRule]:
+    def _extract_invariants(
+        self, body: str, warnings: List[str]
+    ) -> List[InvariantRule]:
         """Extract invariant rules matching ### INV-XX: <Title>."""
         rules: List[InvariantRule] = []
         inv_blocks = re.findall(
@@ -116,16 +118,24 @@ class SpecParser:
                 line = line.strip()
                 if line.startswith("* **Rule**:") or line.startswith("- **Rule**:"):
                     rule_stmt = line.split(":", 1)[1].strip()
-                elif line.startswith("* **Formal Assertion**:") or line.startswith("- **Formal Assertion**:"):
+                elif line.startswith("* **Formal Assertion**:") or line.startswith(
+                    "- **Formal Assertion**:"
+                ):
                     assertion = line.split(":", 1)[1].strip().strip("`")
-                elif line.startswith("* **Applies To**:") or line.startswith("- **Applies To**:"):
+                elif line.startswith("* **Applies To**:") or line.startswith(
+                    "- **Applies To**:"
+                ):
                     applies = line.split(":", 1)[1].strip()
-                elif line.startswith("* **Severity**:") or line.startswith("- **Severity**:"):
+                elif line.startswith("* **Severity**:") or line.startswith(
+                    "- **Severity**:"
+                ):
                     severity = line.split(":", 1)[1].strip().upper()
 
             if not rule_stmt:
                 # Fallback to entire block first line
-                first_lines = [l.strip("* -") for l in block.splitlines() if l.strip()]
+                first_lines = [
+                    item.strip("* -") for item in block.splitlines() if item.strip()
+                ]
                 rule_stmt = first_lines[0] if first_lines else title
 
             clean_title = title.replace("[INVARIANT]", "").strip()
@@ -201,7 +211,9 @@ class SpecParser:
 
         for edge_id, title, block in blocks:
             clean_title = title.replace("[EDGE-CASE]", "").strip()
-            desc = " ".join([l.strip("* -") for l in block.splitlines() if l.strip()])
+            desc = " ".join(
+                [item.strip("* -") for item in block.splitlines() if item.strip()]
+            )
             edge_cases.append(
                 EdgeCase(
                     id=edge_id,
@@ -247,9 +259,9 @@ class SpecParser:
         )
         if match:
             lines = [
-                l.strip("* -")
-                for l in match.group(1).splitlines()
-                if l.strip().startswith(("*", "-"))
+                item.strip("* -")
+                for item in match.group(1).splitlines()
+                if item.strip().startswith(("*", "-"))
             ]
             return lines
         return []

@@ -42,8 +42,9 @@ class GenericAPIProvider(BaseAIProvider):
                     "content": (
                         "You are an expert software verification assistant. "
                         "Given an Invariant specification and git diff, suggest edge cases "
-                        "and boundary hypotheses. Return valid JSON only containing a list of objects with "
-                        "keys: invariant_id, title, description, postulated_scenario, severity, suggested_test_input."
+                        "and boundary hypotheses. Return valid JSON only containing a list "
+                        "of objects with keys: invariant_id, title, description, "
+                        "postulated_scenario, severity, suggested_test_input."
                     ),
                 },
                 {"role": "user", "content": prompt},
@@ -73,7 +74,9 @@ class GenericAPIProvider(BaseAIProvider):
             f"Target System: {payload.target_system}\n\n"
             f"Invariants to verify:\n{inv_text}\n\n"
             f"Git Diff:\n{payload.diff_content or 'No diff provided.'}\n\n"
-            "Generate edge cases in JSON format: [{\"invariant_id\": \"...\", \"title\": \"...\", \"description\": \"...\", \"postulated_scenario\": \"...\", \"severity\": \"HIGH\", \"suggested_test_input\": \"...\"}]"
+            "Generate edge cases in JSON format: "
+            '[{"invariant_id": "...", "title": "...", "description": "...", '
+            '"postulated_scenario": "...", "severity": "HIGH", "suggested_test_input": "..."}]'
         )
 
     def _parse_json_response(self, text: str) -> List[AIHypothesis]:

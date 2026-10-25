@@ -2,7 +2,6 @@
 
 import hashlib
 import hmac
-import pytest
 from services.api.app.core.security import verify_github_signature, DeliveryDeduplicator
 
 
@@ -11,7 +10,9 @@ def test_valid_github_signature() -> None:
     payload = b'{"action": "opened", "repository": {"name": "test-repo"}}'
 
     # Compute valid signature
-    computed_hash = hmac.new(secret.encode("utf-8"), payload, hashlib.sha256).hexdigest()
+    computed_hash = hmac.new(
+        secret.encode("utf-8"), payload, hashlib.sha256
+    ).hexdigest()
     valid_header = f"sha256={computed_hash}"
 
     assert verify_github_signature(payload, valid_header, secret) is True
@@ -20,7 +21,9 @@ def test_valid_github_signature() -> None:
 def test_invalid_signature_rejected() -> None:
     secret = "correct_secret"
     payload = b'{"data": 123}'
-    invalid_header = "sha256=0000000000000000000000000000000000000000000000000000000000000000"
+    invalid_header = (
+        "sha256=0000000000000000000000000000000000000000000000000000000000000000"
+    )
 
     assert verify_github_signature(payload, invalid_header, secret) is False
 
@@ -30,7 +33,9 @@ def test_tampered_payload_rejected() -> None:
     original_payload = b'{"admin": false}'
     tampered_payload = b'{"admin": true}'
 
-    computed_hash = hmac.new(secret.encode("utf-8"), original_payload, hashlib.sha256).hexdigest()
+    computed_hash = hmac.new(
+        secret.encode("utf-8"), original_payload, hashlib.sha256
+    ).hexdigest()
     sig_header = f"sha256={computed_hash}"
 
     # Verifying tampered payload against original signature must fail

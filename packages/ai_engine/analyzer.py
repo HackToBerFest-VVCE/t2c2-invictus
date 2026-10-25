@@ -8,7 +8,7 @@ from .providers.mock_provider import MockAIProvider
 
 class AIAnalyzer:
     """Coordinates AI-assisted hypothesis generation with strict behavioral boundaries.
-    
+
     GUARANTEE: AI outputs are always tagged as advisory hypotheses and cannot directly
     cause a verification run to fail without dynamic test evidence.
     """

@@ -24,14 +24,18 @@ class RepositoryDB(Base):
     default_branch = Column(String(64), default="main")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-    runs = relationship("VerificationRunDB", back_populates="repository", cascade="all, delete-orphan")
+    runs = relationship(
+        "VerificationRunDB", back_populates="repository", cascade="all, delete-orphan"
+    )
 
 
 class VerificationRunDB(Base):
     __tablename__ = "verification_runs"
 
     id = Column(String(64), primary_key=True, index=True)
-    repository_id = Column(String(64), ForeignKey("repositories.id"), nullable=False, index=True)
+    repository_id = Column(
+        String(64), ForeignKey("repositories.id"), nullable=False, index=True
+    )
     commit_sha = Column(String(64), nullable=False, index=True)
     branch = Column(String(128), default="main")
     event_type = Column(String(64), default="push")
@@ -42,14 +46,18 @@ class VerificationRunDB(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     repository = relationship("RepositoryDB", back_populates="runs")
-    findings = relationship("FindingDB", back_populates="run", cascade="all, delete-orphan")
+    findings = relationship(
+        "FindingDB", back_populates="run", cascade="all, delete-orphan"
+    )
 
 
 class FindingDB(Base):
     __tablename__ = "findings"
 
     id = Column(String(64), primary_key=True, index=True)
-    run_id = Column(String(64), ForeignKey("verification_runs.id"), nullable=False, index=True)
+    run_id = Column(
+        String(64), ForeignKey("verification_runs.id"), nullable=False, index=True
+    )
     invariant_id = Column(String(64), nullable=True)
     title = Column(String(256), nullable=False)
     severity = Column(String(32), default="HIGH")

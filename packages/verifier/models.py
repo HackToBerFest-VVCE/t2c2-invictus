@@ -7,6 +7,7 @@ from typing import List, Optional, Dict, Any
 
 class VerificationStatus(str, Enum):
     """Formal 6-tier verification status taxonomy."""
+
     VERIFIED_PASS = "VERIFIED_PASS"
     VERIFIED_FAILURE = "VERIFIED_FAILURE"
     STATIC_WARNING = "STATIC_WARNING"
@@ -18,6 +19,7 @@ class VerificationStatus(str, Enum):
 @dataclass
 class EvidenceTrace:
     """Concrete empirical execution evidence."""
+
     exit_code: int
     stdout: str
     stderr: str
@@ -30,6 +32,7 @@ class EvidenceTrace:
 @dataclass
 class TestExecutionResult:
     """Raw result of running a test suite or verification harness."""
+
     __test__ = False
     adapter_name: str
     status: VerificationStatus
