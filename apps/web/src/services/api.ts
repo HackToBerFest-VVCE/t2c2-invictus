@@ -1,60 +1,116 @@
-import { VerificationRun, Repository } from "../types";
+import {
+  VerificationRun,
+  Repository,
+  ManualTriggerRequest,
+  BackendHealth,
+} from "../types";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const ROOT_API_URL =
+  process.env.NEXT_PUBLIC_ROOT_URL || "http://localhost:8000";
 
+/**
+ * Check connectivity and status of the FastAPI backend service.
+ */
+export async function checkBackendHealth(): Promise<BackendHealth> {
+  try {
+    const res = await fetch(`${ROOT_API_URL}/health`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        status: data.status || "healthy",
+        service: data.service || "invariant-api",
+        version: data.version,
+        environment: data.environment,
+        connected: true,
+      };
+    }
+    return {
+      status: "degraded",
+      service: "invariant-api",
+      connected: false,
+    };
+  } catch (err) {
+    return {
+      status: "offline",
+      service: "invariant-api",
+      connected: false,
+    };
+  }
+}
+
+/**
+ * Fetch connected repositories from backend database.
+ */
 export async function fetchRepositories(): Promise<Repository[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/v1/repositories`, {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Failed to fetch repositories");
-    return await res.json();
-  } catch (err) {
-    // Fallback mock data if backend is offline during frontend preview
-    return [
-      {
-        id: "t2c2-invictus",
-        owner: "HackToBerFest-VVCE",
-        name: "t2c2-invictus",
-        full_name: "HackToBerFest-VVCE/t2c2-invictus",
-        default_branch: "main",
-      },
-    ];
+  const res = await fetch(`${API_BASE_URL}/v1/repositories`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch repositories (${res.status} ${res.statusText})`);
   }
+  return await res.json();
 }
 
-export async function fetchRuns(): Promise<VerificationRun[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/v1/runs`, { cache: "no-store" });
-    if (!res.ok) throw new Error("Failed to fetch verification runs");
-    return await res.json();
-  } catch (err) {
-    // Fallback mock run
-    return [
-      {
-        id: "run_sample_01",
-        repository_id: "t2c2-invictus",
-        commit_sha: "422ab52a9af5",
-        branch: "main",
-        event_type: "push",
-        status: "VERIFIED_PASS",
-        summary: "All 5 invariant checks passed successfully.",
-        duration_ms: 340,
-        created_at: new Date().toISOString(),
-      },
-    ];
+/**
+ * Fetch verification runs from backend database.
+ */
+export async function fetchRuns(repositoryId?: string): Promise<VerificationRun[]> {
+  let url = `${API_BASE_URL}/v1/runs?limit=50`;
+  if (repositoryId) {
+    url += `&repository_id=${encodeURIComponent(repositoryId)}`;
   }
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch verification runs (${res.status} ${res.statusText})`);
+  }
+  return await res.json();
 }
 
+/**
+ * Fetch a single verification run and its evaluated findings.
+ */
 export async function fetchRun(runId: string): Promise<VerificationRun | null> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/v1/runs/${runId}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Failed to fetch run details");
-    return await res.json();
-  } catch (err) {
+  const res = await fetch(`${API_BASE_URL}/v1/runs/${runId}`, {
+    cache: "no-store",
+  });
+  if (res.status === 404) {
     return null;
   }
+  if (!res.ok) {
+    throw new Error(`Failed to fetch run '${runId}' (${res.status} ${res.statusText})`);
+  }
+  return await res.json();
+}
+
+/**
+ * Manually trigger a verification run through the FastAPI backend orchestrator.
+ */
+export async function triggerManualRun(
+  payload: ManualTriggerRequest
+): Promise<VerificationRun> {
+  const res = await fetch(`${API_BASE_URL}/v1/runs/trigger`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      workspace_path: payload.workspace_path || "examples/inventory-api",
+      spec_path: payload.spec_path || "examples/inventory-api/INVARIANT.md",
+      repository_id: payload.repository_id || "t2c2-invictus",
+      commit_sha: payload.commit_sha || "HEAD",
+      branch: payload.branch || "main",
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Failed to trigger verification run: ${errText || res.statusText}`);
+  }
+
+  return await res.json();
 }
