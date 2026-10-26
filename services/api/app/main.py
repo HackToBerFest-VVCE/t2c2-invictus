@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .core.database import init_db
 from .api.v1.runs import router as runs_router
+from .api.v1.specs import router as specs_router
 from .webhooks.github import router as webhooks_router
 
 
@@ -32,6 +33,7 @@ def create_app() -> FastAPI:
 
     # Register Routers
     app.include_router(runs_router, prefix="/api")
+    app.include_router(specs_router, prefix="/api")
     app.include_router(webhooks_router, prefix="/api")
 
     @app.get("/health", tags=["Health"])

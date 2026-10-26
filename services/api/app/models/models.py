@@ -43,7 +43,10 @@ class VerificationRunDB(Base):
     status = Column(String(32), nullable=False)  # VERIFIED_PASS, VERIFIED_FAILURE, etc.
     summary = Column(Text, default="")
     duration_ms = Column(Integer, default=0)
+    is_async = Column(Boolean, default=False)
+    plan_metadata = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
 
     repository = relationship("RepositoryDB", back_populates="runs")
     findings = relationship(
@@ -62,13 +65,20 @@ class FindingDB(Base):
     title = Column(String(256), nullable=False)
     severity = Column(String(32), default="HIGH")
     verification_status = Column(String(32), nullable=False)
+    lifecycle_status = Column(String(32), default="unconfirmed", index=True)
+    confidence = Column(String(32), default="HIGH")
     file_path = Column(String(512), nullable=True)
     line_number = Column(Integer, nullable=True)
     expected_behavior = Column(Text, default="")
     actual_behavior = Column(Text, default="")
     reproduction_command = Column(Text, nullable=True)
     execution_trace = Column(Text, nullable=True)
+    suggested_fix = Column(Text, nullable=True)
+    reviewer_notes = Column(Text, nullable=True)
     ai_assisted = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+    )
 
     run = relationship("VerificationRunDB", back_populates="findings")

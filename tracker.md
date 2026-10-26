@@ -21,9 +21,9 @@ This tracker serves as the authoritative, active development log for **Invariant
 | **M2: Project Foundation** | Monorepo layout, .gitignore, .env.example, CI templates | Completed | Full directory structure established per architect specification. |
 | **M3: Core Verification Packages** | `spec-engine`, `verifier`, `ai-engine`, `report-engine` | Completed | Decoupled packages with clear interfaces and test coverage. |
 | **M4: Reference Example** | `examples/inventory-api` with `INVARIANT.md` and tests | Completed | Concrete inventory service with INV-01, INV-02, INV-03 tests. |
-| **M5: Backend API (FastAPI)** | Webhook ingress, HMAC validation, and orchestrator | Completed | FastAPI app, SQLite/PostgreSQL schemas, REST & webhook routes. |
+| **M5: Backend API (FastAPI)** | Webhook ingress, HMAC validation, and orchestrator | Completed | FastAPI app, SQLite/PostgreSQL schemas, REST & webhook routes, background tasks. |
 | **M6: Web Dashboard** | Next.js + Tailwind CSS UI for runs and findings | Completed | Next.js 14 app with status badges, run cards, and trace viewer. |
-| **M7: Integration & Validation** | End-to-end MVP tests and verification pipeline | Completed | 16/16 unit and integration tests passing. |
+| **M7: Integration & Validation** | End-to-end MVP tests and verification pipeline | Completed | 35/35 unit and integration tests passing. |
 
 ---
 
@@ -33,10 +33,11 @@ This tracker serves as the authoritative, active development log for **Invariant
 | :--- | :--- | :--- | :--- |
 | **DEC-001** | 2026-10-25 | Architecture | Adopted a modular monorepo structure (`apps/web`, `services/api`, `packages/*`, `examples/*`) to keep verification packages decoupled and reusable as standalone CLI tools or libraries. |
 | **DEC-002** | 2026-10-25 | AI Engine | Strict non-authoritative boundary enforced: AI model outputs structured hypotheses (`AIHypothesis`) only. Never allowed to mark checks as failed without runner execution traces. |
-| **DEC-003** | 2026-10-25 | Database | Abstracted database access using SQLAlchemy so SQLite works out of the box for local developer setups without Docker while PostgreSQL is supported for production deployments. |
+| **DEC-003** | 2026-10-25 | Database | Abstracted database access using SQLAlchemy so SQLite works out of the box for local developer setups without Docker while PostgreSQL is supported for production deployments. Added resilient schema column auto-migration in `init_db()`. |
 | **DEC-004** | 2026-10-25 | Verifier Isolation | Subprocess runner executes target tests with independent cwd, timeout watchdogs, memory/PID limits, and stripped environment variables to prevent host credential leaks. |
 | **DEC-005** | 2026-10-25 | Verification Integrity | Enforced fail-safe status rule: unexecuted, timed-out, or crashed checks emit `CHECK_ERROR` or `UNSUPPORTED`. Never report an unrun check as `VERIFIED_PASS`. |
 | **DEC-006** | 2026-10-25 | Pytest Isolation | Configured `pytest.ini` with `--import-mode=importlib` to avoid module naming collisions between top-level `tests/` and service-level `services/api/tests/`. |
+| **DEC-007** | 2026-10-26 | GitHub Checks API | Decoupled Check Run payload building and line-level annotations from transport. Operates in dry-run mode when unauthenticated, and posts checks when `GITHUB_TOKEN` is supplied. |
 
 ---
 
@@ -82,3 +83,12 @@ This tracker serves as the authoritative, active development log for **Invariant
 * Executed Pytest test suite across all packages, API, and reference example.
 * **Result**: 16 passed in 4.36s (100% test pass rate).
 * Verified CLI runner on `examples/inventory-api/`: 5 passed, status `VERIFIED_PASS`.
+
+### Task 8: Backend Production Expansion (Completed)
+* Implemented specification explorer and test-gap detection endpoints (`/api/v1/specs`, `/api/v1/specs/analyze`) with AST/keyword test coverage mapping in `TestGapAnalyzer`.
+* Implemented cross-commit run comparison API (`/api/v1/runs/compare`) computing new regressions, resolved findings, and persistent failures.
+* Implemented report download endpoints for Markdown (`/export/markdown`), JSON (`/export/json`), and GitHub Issue drafts (`/export/github-issue`).
+* Implemented finding lifecycle status management endpoint (`PATCH /api/v1/findings/{finding_id}/status`) supporting unconfirmed, confirmed, resolved, and dismissed states.
+* Implemented GitHub Checks API service (`GitHubChecksService`) with line-level annotations and dry-run fallback.
+* Added async background task execution to `/api/v1/runs/trigger` and enhanced webhook pull request event handling.
+* Expanded test suite from 16 to 35 integration tests with 100% pass rate. Verified with Black and Flake8 formatting checks.

@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS verification_runs (
     status VARCHAR(32) NOT NULL, -- 'PENDING', 'RUNNING', 'VERIFIED_PASS', 'VERIFIED_FAILURE', 'CHECK_ERROR'
     summary TEXT,
     duration_ms INTEGER,
+    is_async BOOLEAN DEFAULT FALSE,
+    plan_metadata TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP
 );
@@ -36,14 +38,19 @@ CREATE TABLE IF NOT EXISTS findings (
     title VARCHAR(256) NOT NULL,
     severity VARCHAR(32) NOT NULL, -- 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'
     verification_status VARCHAR(32) NOT NULL, -- 'VERIFIED_PASS', 'VERIFIED_FAILURE', 'STATIC_WARNING', 'AI_HYPOTHESIS', 'CHECK_ERROR'
+    lifecycle_status VARCHAR(32) DEFAULT 'unconfirmed', -- 'unconfirmed', 'confirmed', 'resolved', 'dismissed'
+    confidence VARCHAR(32) DEFAULT 'HIGH',
     file_path VARCHAR(512),
     line_number INTEGER,
     expected_behavior TEXT,
     actual_behavior TEXT,
     reproduction_command TEXT,
     execution_trace TEXT,
+    suggested_fix TEXT,
+    reviewer_notes TEXT,
     ai_assisted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indices for Fast Querying

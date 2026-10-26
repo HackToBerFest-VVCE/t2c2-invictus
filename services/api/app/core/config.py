@@ -18,6 +18,7 @@ class Settings:
         self.database_url: str = os.getenv("DATABASE_URL", "sqlite:///./invariant.db")
 
         self.github_webhook_secret: Optional[str] = os.getenv("GITHUB_WEBHOOK_SECRET")
+        self.github_token: Optional[str] = os.getenv("GITHUB_TOKEN")
         self.github_app_id: Optional[str] = os.getenv("GITHUB_APP_ID")
         self.github_private_key_path: Optional[str] = os.getenv(
             "GITHUB_PRIVATE_KEY_PATH"

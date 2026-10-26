@@ -58,11 +58,18 @@ async def handle_github_webhook(
         raise HTTPException(status_code=400, detail="Invalid JSON payload structure.")
 
     repo_data = payload.get("repository", {})
-    repo_name = repo_data.get("name", "unknown_repo")
-    commit_sha = payload.get("after") or payload.get("head_commit", {}).get(
-        "id", "HEAD"
-    )
-    branch = payload.get("ref", "refs/heads/main").replace("refs/heads/", "")
+    repo_name = repo_data.get("full_name") or repo_data.get("name", "unknown_repo")
+
+    # Extract commit and branch for push or pull_request events
+    if x_github_event == "pull_request":
+        pr_data = payload.get("pull_request", {})
+        commit_sha = pr_data.get("head", {}).get("sha", "HEAD")
+        branch = pr_data.get("head", {}).get("ref", "main")
+    else:
+        commit_sha = payload.get("after") or payload.get("head_commit", {}).get(
+            "id", "HEAD"
+        )
+        branch = payload.get("ref", "refs/heads/main").replace("refs/heads/", "")
 
     # Dispatch Verification
     svc = VerificationService(db=db)
