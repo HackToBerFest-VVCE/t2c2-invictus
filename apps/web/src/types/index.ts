@@ -44,3 +44,19 @@ export interface Repository {
   default_branch: string;
   recent_runs?: VerificationRun[];
 }
+
+export interface ManualTriggerRequest {
+  workspace_path?: string;
+  spec_path?: string;
+  repository_id?: string;
+  commit_sha?: string;
+  branch?: string;
+}
+
+export interface BackendHealth {
+  status: string;
+  service: string;
+  version?: string;
+  environment?: string;
+  connected: boolean;
+}
