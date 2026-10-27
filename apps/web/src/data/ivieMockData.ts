@@ -490,3 +490,57 @@ export const INITIAL_TEST_EVIDENCE: TestEvidenceItem[] = [
     requirementId: "REQ-001",
   },
 ];
+
+export interface ChatContextFile {
+  id: string;
+  name: string;
+  size: string;
+  timestamp: string;
+  messageCount: number;
+  extractedHypothesesCount: number;
+  rawContent: string;
+  extractedNotes: string[];
+}
+
+export const INITIAL_CHAT_CONTEXTS: ChatContextFile[] = [
+  {
+    id: "ctx-01",
+    name: "slack-incident-checkout-discounts.md",
+    size: "14.2 KB",
+    timestamp: "Today at 14:20",
+    messageCount: 18,
+    extractedHypothesesCount: 2,
+    rawContent: `## Incident Slack Thread #war-room-checkout
+Participants: @alex.dev, @sarah.qa, @marcus.lead
+
+[14:02] @sarah.qa: Hey team, we just saw a customer order in staging where a 45% discount was applied. Isn't MAX_DISCOUNT capped at 30% in INVARIANT.md?
+[14:05] @alex.dev: Looking into src/discount.ts now. Ah, applyDiscount() checks if discount < 0, but it never clamps to 30!
+[14:08] @marcus.lead: That's a critical financial invariant breach. We need IVIE to verify if coupon stacking allows this to compound further.
+[14:12] @alex.dev: Also checking src/coupon.ts. The session cache timestamp isn't checking Date.now(), so expired promo codes remain active if the session started before expiration.
+[14:18] @sarah.qa: Filing test cases TEST-DISC-01 and TEST-COUP-01 against feature/discount-validation.`,
+    extractedNotes: [
+      "Missing discount clamp ceiling (30%) in applyDiscount()",
+      "Stale session timestamp validation in isCouponActive()",
+      "Coupon stacking allows compounding beyond margin rules",
+    ],
+  },
+  {
+    id: "ctx-02",
+    name: "copilot-pr-review-cart-sparse.json",
+    size: "8.6 KB",
+    timestamp: "Yesterday at 16:45",
+    messageCount: 12,
+    extractedHypothesesCount: 1,
+    rawContent: `{
+  "pr": 42,
+  "author": "copilot-agent",
+  "comment": "In calculateCartTotal(cart), cart.items may contain null values if optional filters return sparse arrays. Accessing item.price directly causes uncaught TypeError in production checkout runs.",
+  "suggested_fix": "Filter null items or use optional chaining item?.price",
+  "invariant_ref": "REQ-003: Cart operations must validate required values"
+}`,
+    extractedNotes: [
+      "Null dereference risk when iterating cart.items in calculateCartTotal",
+      "Sparse array filtering needed before price reduction",
+    ],
+  },
+];

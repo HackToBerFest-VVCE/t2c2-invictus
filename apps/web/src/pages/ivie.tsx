@@ -7,15 +7,19 @@ import { IvieFindings } from "../components/ivie/IvieFindings";
 import { IvieRequirements } from "../components/ivie/IvieRequirements";
 import { IvieTestEvidence } from "../components/ivie/IvieTestEvidence";
 import { IvieSettings } from "../components/ivie/IvieSettings";
+import { IvieChatContext } from "../components/ivie/IvieChatContext";
+import { IvieChatContextDrawer } from "../components/ivie/IvieChatContextDrawer";
 import { IvieFindingDetailModal } from "../components/ivie/IvieFindingDetailModal";
 import {
   Finding,
   VerificationRun,
   VerificationStatus,
+  ChatContextFile,
   INITIAL_FINDINGS,
   INITIAL_VERIFICATION_RUNS,
   INITIAL_REQUIREMENTS,
   INITIAL_TEST_EVIDENCE,
+  INITIAL_CHAT_CONTEXTS,
 } from "../data/ivieMockData";
 
 export default function IviePage() {
@@ -25,7 +29,21 @@ export default function IviePage() {
   const [runs, setRuns] = useState<VerificationRun[]>(INITIAL_VERIFICATION_RUNS);
   const [requirements] = useState(INITIAL_REQUIREMENTS);
   const [testEvidence] = useState(INITIAL_TEST_EVIDENCE);
+  const [chatContexts, setChatContexts] = useState<ChatContextFile[]>(INITIAL_CHAT_CONTEXTS);
+  const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
   const [inspectedFinding, setInspectedFinding] = useState<Finding | null>(null);
+
+  const handleAddContext = (newCtx: ChatContextFile) => {
+    setChatContexts((prev) => [newCtx, ...prev]);
+  };
+
+  const handleDeleteContext = (id: string) => {
+    setChatContexts((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleFeedHypothesesToFindings = (newFinding: Finding) => {
+    setFindings((prev) => [newFinding, ...prev]);
+  };
 
   // Actions for findings state
   const handleToggleReviewed = (id: string) => {
@@ -102,6 +120,7 @@ export default function IviePage() {
           onRepoChange={setSelectedRepo}
           findingsCount={findings.length}
           unreviewedCount={unreviewedCount}
+          contextCount={chatContexts.length}
         />
 
         {/* Main Content Area */}
@@ -150,6 +169,15 @@ export default function IviePage() {
             />
           )}
 
+          {activeTab === "context" && (
+            <IvieChatContext
+              chatContexts={chatContexts}
+              onAddContext={handleAddContext}
+              onDeleteContext={handleDeleteContext}
+              onFeedHypothesesToFindings={handleFeedHypothesesToFindings}
+            />
+          )}
+
           {activeTab === "settings" && (
             <IvieSettings
               selectedRepo={selectedRepo}
@@ -158,6 +186,16 @@ export default function IviePage() {
           )}
         </main>
       </div>
+
+      {/* Docked Side Tab & Slide-Out Drawer for Chat Context */}
+      <IvieChatContextDrawer
+        isOpen={isChatDrawerOpen}
+        onOpen={() => setIsChatDrawerOpen(true)}
+        onClose={() => setIsChatDrawerOpen(false)}
+        chatContexts={chatContexts}
+        onAddContext={handleAddContext}
+        onFeedHypothesesToFindings={handleFeedHypothesesToFindings}
+      />
 
       {/* Global Finding Detail Modal */}
       <IvieFindingDetailModal

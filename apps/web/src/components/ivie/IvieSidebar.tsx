@@ -10,6 +10,8 @@ import {
   CircleDot,
   CheckCircle2,
   Sparkles,
+  MessageSquareText,
+  UploadCloud,
 } from "lucide-react";
 
 export type IvieTab =
@@ -18,6 +20,7 @@ export type IvieTab =
   | "findings"
   | "requirements"
   | "evidence"
+  | "context"
   | "settings";
 
 interface IvieSidebarProps {
@@ -27,6 +30,7 @@ interface IvieSidebarProps {
   onRepoChange: (repo: string) => void;
   findingsCount: number;
   unreviewedCount: number;
+  contextCount?: number;
 }
 
 export const IvieSidebar: React.FC<IvieSidebarProps> = ({
@@ -36,8 +40,9 @@ export const IvieSidebar: React.FC<IvieSidebarProps> = ({
   onRepoChange,
   findingsCount,
   unreviewedCount,
+  contextCount = 2,
 }) => {
-  const navItems: { id: IvieTab; label: string; icon: React.ReactNode; badge?: number }[] = [
+  const navItems: { id: IvieTab; label: string; icon: React.ReactNode; badge?: number; badgeText?: string }[] = [
     {
       id: "overview",
       label: "Overview",
@@ -63,6 +68,12 @@ export const IvieSidebar: React.FC<IvieSidebarProps> = ({
       id: "evidence",
       label: "Test Evidence",
       icon: <FlaskConical className="w-4 h-4" />,
+    },
+    {
+      id: "context",
+      label: "Chat Context",
+      icon: <MessageSquareText className="w-4 h-4" />,
+      badgeText: `${contextCount}`,
     },
     {
       id: "settings",
@@ -117,11 +128,15 @@ export const IvieSidebar: React.FC<IvieSidebarProps> = ({
                 </span>
                 <span className="truncate">{item.label}</span>
               </div>
-              {item.badge !== undefined && item.badge > 0 && (
+              {item.badge !== undefined && item.badge > 0 ? (
                 <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
                   {item.badge}
                 </span>
-              )}
+              ) : item.badgeText ? (
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                  {item.badgeText}
+                </span>
+              ) : null}
             </button>
           );
         })}
