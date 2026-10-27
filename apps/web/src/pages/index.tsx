@@ -3,12 +3,15 @@ import Head from "next/head";
 import { useRuns } from "../hooks/useRuns";
 import { RunCard } from "../components/RunCard";
 import { TriggerModal } from "../components/TriggerModal";
+import { useRepo } from "../context/RepoContext";
 
 export default function DashboardPage() {
+  const { activeRepo } = useRepo();
   const { runs, loading, error, refresh } = useRuns();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [branchFilter, setBranchFilter] = useState("ALL");
+  const [repoFilter, setRepoFilter] = useState("ALL");
   const [isTriggerOpen, setIsTriggerOpen] = useState(false);
 
   // Compute metrics from actual runs returned by backend
@@ -26,6 +29,15 @@ export default function DashboardPage() {
     return Array.from(set);
   }, [runs]);
 
+  // Extract unique repositories
+  const uniqueRepos = useMemo(() => {
+    const set = new Set<string>();
+    runs.forEach((r) => {
+      if (r.repository_id) set.add(r.repository_id);
+    });
+    return Array.from(set);
+  }, [runs]);
+
   // Filter runs based on search & filter
   const filteredRuns = useMemo(() => {
     return runs.filter((run) => {
@@ -34,6 +46,7 @@ export default function DashboardPage() {
         run.commit_sha?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         run.branch?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         run.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        run.repository_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         run.id?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
@@ -42,9 +55,12 @@ export default function DashboardPage() {
       const matchesBranch =
         branchFilter === "ALL" || run.branch === branchFilter;
 
-      return matchesSearch && matchesStatus && matchesBranch;
+      const matchesRepo =
+        repoFilter === "ALL" || run.repository_id === repoFilter;
+
+      return matchesSearch && matchesStatus && matchesBranch && matchesRepo;
     });
-  }, [runs, searchTerm, statusFilter, branchFilter]);
+  }, [runs, searchTerm, statusFilter, branchFilter, repoFilter]);
 
   return (
     <>
@@ -63,9 +79,15 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-[#f0f6fc]">
               Verification Dashboard
             </h1>
-            <p className="text-sm text-[#8b949e] mt-1">
-              Active repository invariants enforced continuously against every commit.
-            </p>
+            <div className="flex items-center space-x-2 text-xs text-[#8b949e] mt-1 flex-wrap">
+              <span>Active Repository:</span>
+              <span className="font-mono text-[#58a6ff] font-semibold">{activeRepo.name}</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full border border-[#30363d] text-[#8b949e]">
+                {activeRepo.visibility}
+              </span>
+              <span>·</span>
+              <span>Invariants verified against declarative INVARIANT.md</span>
+            </div>
           </div>
 
           <div className="flex items-center space-x-2.5">
@@ -152,10 +174,29 @@ export default function DashboardPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-8 pr-3 py-1.5 bg-[#0d1117] border border-[#30363d] rounded-md font-mono text-xs text-[#c9d1d9] placeholder-[#8b949e] focus:outline-none focus:border-[#58a6ff]"
               />
-              <span className="absolute left-2.5 top-2 text-[#8b949e] text-xs">
-                🔍
-              </span>
+              <svg
+                className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-[#8b949e]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
+
+            <select
+              value={repoFilter}
+              onChange={(e) => setRepoFilter(e.target.value)}
+              className="px-2.5 py-1.5 bg-[#0d1117] border border-[#30363d] rounded-md font-mono text-xs text-[#c9d1d9] focus:outline-none focus:border-[#58a6ff]"
+            >
+              <option value="ALL">Repo: All ({runs.length})</option>
+              {uniqueRepos.map((repo) => (
+                <option key={repo} value={repo}>
+                  Repo: {repo}
+                </option>
+              ))}
+            </select>
 
             <select
               value={statusFilter}

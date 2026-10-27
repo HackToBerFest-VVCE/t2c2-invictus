@@ -20,11 +20,11 @@ export const RunCard: React.FC<RunCardProps> = ({ run }) => {
           <div className="mt-0.5 flex-shrink-0">
             {isPass ? (
               <span className="w-5 h-5 rounded-full bg-[#238636]/20 text-[#3fb950] border border-[#238636]/40 flex items-center justify-center text-xs font-bold font-mono">
-                ✔
+                ✓
               </span>
             ) : isFailure ? (
               <span className="w-5 h-5 rounded-full bg-[#da3633]/20 text-[#f85149] border border-[#da3633]/40 flex items-center justify-center text-xs font-bold font-mono">
-                ✖
+                ✕
               </span>
             ) : (
               <span className="w-5 h-5 rounded-full bg-[#bc8cff]/20 text-[#bc8cff] border border-[#bc8cff]/40 flex items-center justify-center text-xs font-bold font-mono">
@@ -44,6 +44,11 @@ export const RunCard: React.FC<RunCardProps> = ({ run }) => {
               <span className="text-[11px] px-1.5 py-0.2 rounded bg-[#21262d] border border-[#30363d] text-[#8b949e] font-mono">
                 {run.id}
               </span>
+              {run.repository_id && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#1f6feb]/15 text-[#58a6ff] border border-[#1f6feb]/40 font-mono font-medium">
+                  {run.repository_id}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center space-x-3 text-xs text-[#8b949e] flex-wrap gap-y-1">

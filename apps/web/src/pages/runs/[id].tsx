@@ -7,6 +7,7 @@ import { fetchRun, getExportUrl } from "../../services/api";
 import { StatusBadge } from "../../components/StatusBadge";
 import { FindingCard } from "../../components/FindingCard";
 import { TriggerModal } from "../../components/TriggerModal";
+import { ALL_DEMO_REPOSITORIES } from "../../data/demoData";
 
 export default function RunDetailsPage() {
   const router = useRouter();
@@ -21,12 +22,28 @@ export default function RunDetailsPage() {
   const loadRun = (runId: string) => {
     setLoading(true);
     setErrorMsg(null);
+
+    // Check if run exists in demo catalog
+    const allDemoRuns = ALL_DEMO_REPOSITORIES.flatMap((r) => r.recent_runs || []);
+    const demoMatch = allDemoRuns.find((r) => r.id === runId);
+
     fetchRun(runId)
       .then((data) => {
-        setRun(data);
+        if (data) {
+          setRun(data);
+        } else if (demoMatch) {
+          setRun(demoMatch);
+        } else {
+          setErrorMsg(`Verification run '${runId}' not found.`);
+        }
       })
       .catch((err) => {
-        setErrorMsg(err.message || "Failed to load run details from backend.");
+        if (demoMatch) {
+          setRun(demoMatch);
+          setErrorMsg(null);
+        } else {
+          setErrorMsg(err.message || "Failed to load run details from backend.");
+        }
       })
       .finally(() => setLoading(false));
   };
@@ -254,7 +271,9 @@ export default function RunDetailsPage() {
 
           {filteredFindings.length === 0 ? (
             <div className="p-12 text-center border border-[#30363d] rounded-md bg-[#161b22] space-y-2">
-              <span className="text-[#3fb950] text-2xl font-bold">✔</span>
+              <svg className="w-10 h-10 text-[#3fb950] mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
               <p className="text-sm font-semibold text-[#f0f6fc]">
                 {findings.length === 0
                   ? "Zero Invariant Violations Detected"
