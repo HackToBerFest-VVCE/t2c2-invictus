@@ -77,7 +77,38 @@ class FindingNormalizer:
                 )
             )
 
-        # 2. Add AI hypotheses as AI_HYPOTHESIS status (never marked as verified failure!)
+        # 2. For passing suites with a specification, create verified pass records for invariants
+        if (
+            test_result.status == VerificationStatus.VERIFIED_PASS
+            and spec
+            and spec.invariants
+        ):
+            failing_ids = {
+                f.invariant_id
+                for f in findings
+                if f.status == VerificationStatus.VERIFIED_FAILURE
+            }
+            for inv in spec.invariants:
+                if inv.id not in failing_ids:
+                    findings.append(
+                        VerificationFinding(
+                            finding_id=f"FIND-{uuid.uuid4().hex[:6].upper()}",
+                            title=f"Verified Invariant: {inv.title}",
+                            invariant_id=inv.id,
+                            severity=inv.severity,
+                            status=VerificationStatus.VERIFIED_PASS,
+                            expected_behavior=inv.rule_statement,
+                            actual_behavior="Verified passing across all test suite assertions.",
+                            reproduction_command=test_result.evidence.reproduction_command,
+                            execution_trace=(
+                                f"Test execution succeeded with 0 failures "
+                                f"({test_result.passed_count} assertions verified)."
+                            ),
+                            ai_assisted=False,
+                        )
+                    )
+
+        # 3. Add AI hypotheses as AI_HYPOTHESIS status (never marked as verified failure!)
         for hyp in hypotheses:
             findings.append(
                 VerificationFinding(

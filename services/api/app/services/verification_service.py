@@ -52,11 +52,18 @@ class VerificationService:
         run_id: Optional[str] = None,
         is_async: bool = False,
     ) -> VerificationReport:
-        """Run complete verification pipeline and persist results."""
         active_run_id = run_id or f"run_{uuid.uuid4().hex[:12]}"
-        full_spec_path = os.path.join(workspace_path, spec_path)
 
-        # 1. Parse Specification
+        # 1. Resolve and Parse Specification
+        if os.path.exists(spec_path):
+            full_spec_path = spec_path
+        elif os.path.exists(os.path.join(workspace_path, spec_path)):
+            full_spec_path = os.path.join(workspace_path, spec_path)
+        elif os.path.exists(os.path.join(workspace_path, "INVARIANT.md")):
+            full_spec_path = os.path.join(workspace_path, "INVARIANT.md")
+        else:
+            full_spec_path = os.path.join(workspace_path, spec_path)
+
         spec = None
         if os.path.exists(full_spec_path):
             spec = self.spec_parser.parse_file(full_spec_path)
