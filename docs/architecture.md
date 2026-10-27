@@ -9,18 +9,20 @@ This document describes the system architecture of **Invariant**, a continuous s
 Invariant is structured as an event-driven verification platform. When code changes occur, Invariant reconciles the changed code against declared invariants, runs isolated verification routines, uses an AI API strictly for hypothesis and edge-case generation, and yields an evidence-backed verification report.
 
 > [!NOTE]
-> **Implementation Status Notice**: Invariant is currently in its active bootstrap and design phase for the Hacktoberfest hackathon. Core architectural interfaces, specification schemas, threat models, and verification abstractions are established. Subsystems marked as **[Planned]** represent roadmap milestones currently in scaffolding, while **[Specification/Design]** represents completed design contracts ready for implementation.
+> **Implementation Status**: Core architectural components, verification packages, REST APIs, web dashboard, and IDE MCP servers are fully implemented and verified with a 42-test automated suite. For the in-depth technical investigation on verification engines, comparative analysis, and defensible innovation (DIGEV), see [docs/verification-research.md](verification-research.md). For IDE integration via the Model Context Protocol, see [docs/mcp-setup.md](mcp-setup.md).
 
 | Subsystem | Component | Status | Responsibility |
 | :--- | :--- | :--- | :--- |
-| **GitHub Integration** | Webhook Receiver & GitHub App | Planned | Ingest and validate signed GitHub webhook events (`push`, `pull_request`). |
-| **GitHub Integration** | Checks API Reporter | Planned | Publish check runs, summary annotations, and verification status back to GitHub PRs. |
-| **Backend Core** | Verification Orchestrator | Planned | Pipeline manager that coordinates parsing, sandbox execution, AI assistance, and storage. |
-| **Specification** | `INVARIANT.md` Parser | Specification/Design | Extracts structured invariants, invariants metadata, contracts, and rule sets. |
-| **Execution Sandbox** | Verification Runner | Planned | Ephemeral, isolated execution environment executing dynamic test runs and property tests. |
-| **AI Assistant** | AI API Gateway | Planned | Bounded LLM interface generating edge-case hypotheses and synthesis plans (non-authoritative). |
-| **Storage & Data** | Results Database | Planned | Relational store recording verification runs, execution logs, and classified findings. |
-| **Frontend UI** | Verification Dashboard | Planned | Web-based interface displaying run histories, invariant coverage, and finding triage. |
+| **GitHub Integration** | Webhook Receiver & HMAC Ingress | Implemented | Ingest and validate signed GitHub webhook events (`push`, `pull_request`). |
+| **GitHub Integration** | Checks API Reporter | Implemented | Build check runs, summary annotations, and PR reviews (`GitHubChecksService`). |
+| **Backend Core** | Verification Orchestrator | Implemented | Pipeline manager that coordinates parsing, sandbox execution, AI assistance, and storage. |
+| **Specification** | `INVARIANT.md` Parser & Gap Analyzer | Implemented | Extracts structured invariants, contracts, and maps test coverage (`TestGapAnalyzer`). |
+| **Execution Sandbox** | Verification Runner | Implemented | Ephemeral, isolated execution environment with environment scrubbing and timeout limits. |
+| **AI Assistant** | AI Provider (Gemini / OpenAI / Heuristic) | Implemented | Bounded LLM interface generating edge-case hypotheses and synthesis plans (non-authoritative). |
+| **Storage & Data** | Results Database (SQLite / Postgres) | Implemented | Relational store recording verification runs, execution logs, and classified findings. |
+| **Frontend UI** | Verification Dashboard (Next.js 14) | Implemented | Web interface displaying run histories, invariant coverage, compare view, and MCP playground. |
+| **IDE Integration** | Model Context Protocol (MCP) Server | Implemented | Exposes verification tools directly to VS Code, Cursor, Windsurf, and Claude via JSON-RPC. |
+| **Automated Repair** | Fix Branch Generator | Implemented | Synthesizes targeted Git fix branches, code patches, and PR metadata for invariant violations. |
 
 ---
 

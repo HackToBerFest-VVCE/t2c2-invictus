@@ -207,4 +207,38 @@ export async function seedDemoRuns(): Promise<{
   return await res.json();
 }
 
+/**
+ * Fetch available Model Context Protocol (MCP) tools and schemas.
+ */
+export async function fetchMcpTools(): Promise<any[]> {
+  const res = await fetch(`${API_BASE_URL}/v1/mcp/tools`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch MCP tools: ${res.statusText}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Execute an MCP tool via the FastAPI backend runner.
+ */
+export async function executeMcpTool(
+  toolName: string,
+  args: Record<string, any>
+): Promise<any> {
+  const res = await fetch(`${API_BASE_URL}/v1/mcp/execute`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tool_name: toolName,
+      arguments: args,
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`MCP tool execution failed: ${errText || res.statusText}`);
+  }
+  return await res.json();
+}
+
+
 

@@ -101,7 +101,10 @@ Invariant introduces an empirical, specification-driven verification pipeline:
 
 * **Continuous Specification Enforcement**: Automated evaluation of business rules on every `push` and `pull_request`.
 * **Standardized Specification Schema**: Human-readable and machine-parseable `INVARIANT.md` format supporting invariants, contracts, and error states.
-* **Evidence-Based Finding Classification**: Distinct categorization separating verified dynamic failures from static warnings and unverified AI hypotheses.
+* **Verification Intelligence Engine (VIE)**: Evaluates AI-detected issues against requirements and execution traces using **Differential Invariant-Guided Execution Verification (DIGEV)** (see [docs/verification-research.md](docs/verification-research.md)).
+* **Evidence-Based 5-Tier Classification**: Rigorously categorizes findings into `Reproduced`, `Strongly Supported`, `Potential`, `Inconclusive`, or `False Positive`.
+* **Model Context Protocol (MCP) Server**: Exposes verification, test-gap analysis, and automated fix generation to VS Code, Cursor, Windsurf, and Claude Desktop (see [docs/mcp-setup.md](docs/mcp-setup.md)).
+* **Interactive MCP Playground**: Test and execute verification tools live in the web dashboard at `/docs`.
 * **Isolated Sandbox Execution**: Ephemeral container environments with restricted capabilities, resource quotas, and hard timeouts.
 * **Fail-Safe Verification Model**: Strict policy guaranteeing that unexecuted or crashed checks are never reported as passing.
 * **GitHub Checks Integration**: Line-level annotations and summary reports delivered directly to code reviewers on GitHub.
@@ -396,14 +399,17 @@ Open `http://localhost:3000` to inspect runs, findings, and evidence traces.
 
 ## 13. Testing and Verification
 
-Run the comprehensive automated test suite (all 16 integration, unit, and end-to-end tests):
+Run the comprehensive automated test suite (42 integration, unit, and end-to-end tests):
 
 ```bash
-# Run all tests across packages and API
+# Run all 42 tests across packages, API, and MCP server
 python -m pytest -v
 
 # Run reference example tests directly
 python -m pytest examples/inventory-api/tests -v
+
+# Run linting and style checks
+python -m flake8 --max-line-length=100 --extend-ignore=E203,W503 services/api packages tests
 ```
 
 ---
@@ -419,7 +425,7 @@ Consider an inventory service specifying:
 4. The AI Assistant generates a high-concurrency race condition scenario.
 5. The Verification Runner executes the property-based test harness inside the sandbox.
 6. The test fails: `AssertionError: item.available_stock is -2`.
-7. Invariant classifies the result as **`VERIFIED_FAILURE`** and posts a failing GitHub Check run with the exact stack trace and reproduction seed.
+7. Invariant classifies the result as **`Reproduced`** (`VERIFIED_FAILURE`) and posts a failing GitHub Check run with the exact stack trace and reproduction seed.
 
 ---
 
@@ -430,13 +436,12 @@ Consider an inventory service specifying:
 * **Webhook Replay & Spoofing Defense**: All incoming payloads require HMAC-SHA256 signature verification and timestamp drift validation.
 * **Non-Authoritative AI Boundary**: AI models cannot mark builds as failed; all reported bugs require reproducible execution traces.
 
-For the full security assessment, see the [docs/threat-model.md](docs/threat-model.md).
+For the full security assessment, see [docs/threat-model.md](docs/threat-model.md) and [docs/verification-research.md](docs/verification-research.md).
 
 ---
 
 ## 16. Current Limitations
 
-* **Hackathon Bootstrap State**: The project is currently transitioning from specification and architectural design into initial module implementation.
 * **Automated Test Synthesis**: Automated translation of natural-language invariant prose into executable property tests is experimental and requires human review.
 * **Language Ecosystem**: Initial execution sandboxes prioritize Python and JavaScript/TypeScript test frameworks.
 
@@ -450,7 +455,9 @@ For the full security assessment, see the [docs/threat-model.md](docs/threat-mod
 * [x] **Milestone 4**: Findings classification engine, lifecycle tracker, and SQLite persistence layer.
 * [x] **Milestone 5**: GitHub Checks API integration, PR annotation reporter, and export generators.
 * [x] **Milestone 6**: Web dashboard for continuous verification, run exploration, and test gap analysis.
-* [ ] **Milestone 7**: Extended multi-language verification engines (Rust, Go) and distributed cloud runners.
+* [x] **Milestone 7**: Model Context Protocol (MCP) server & automated fix generator for IDE pair programming.
+* [x] **Milestone 8**: Research investigation and architecture blueprint for Verification Intelligence Engine (VIE) and DIGEV.
+* [ ] **Milestone 9**: Extended multi-language verification engines (Rust, Go) and distributed cloud runners.
 
 ---
 

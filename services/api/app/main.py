@@ -6,6 +6,7 @@ from .core.config import settings
 from .core.database import init_db
 from .api.v1.runs import router as runs_router
 from .api.v1.specs import router as specs_router
+from .api.v1.mcp import router as mcp_router
 from .webhooks.github import router as webhooks_router
 
 
@@ -24,6 +25,14 @@ def create_app() -> FastAPI:
             "description": (
                 "Parse declarative INVARIANT.md specifications and execute automated "
                 "AST test-gap analysis against project test suites."
+            ),
+        },
+        {
+            "name": "Model Context Protocol (MCP)",
+            "description": (
+                "Inspect and execute Model Context Protocol (MCP) tools directly via "
+                "interactive REST endpoints (tool listing, verification, AI repair, "
+                "and fix branch)."
             ),
         },
         {
@@ -70,6 +79,7 @@ def create_app() -> FastAPI:
     # Register Routers
     app.include_router(runs_router, prefix="/api")
     app.include_router(specs_router, prefix="/api")
+    app.include_router(mcp_router, prefix="/api")
     app.include_router(webhooks_router, prefix="/api")
 
     @app.get("/health", tags=["Health"])

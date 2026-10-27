@@ -24,6 +24,8 @@ This tracker serves as the authoritative, active development log for **Invariant
 | **M5: Backend API (FastAPI)** | Webhook ingress, HMAC validation, and orchestrator | Completed | FastAPI app, SQLite/PostgreSQL schemas, REST & webhook routes, background tasks. |
 | **M6: Web Dashboard** | Next.js + Tailwind CSS UI for runs and findings | Completed | Next.js 14 app with status badges, run cards, and trace viewer. |
 | **M7: Integration & Validation** | End-to-end MVP tests and verification pipeline | Completed | 35/35 unit and integration tests passing. |
+| **M8: Model Context Protocol (MCP)** | IDE stdio MCP server & automated fix generator | Completed | 5 MCP tools, VS Code / Cursor integration, Next.js playground. |
+| **M9: Verification Research Report** | Invariant Verification Intelligence Engine & DIGEV | Completed | Authoritative 10-section report (`docs/verification-research.md`). |
 
 ---
 
@@ -38,6 +40,8 @@ This tracker serves as the authoritative, active development log for **Invariant
 | **DEC-005** | 2026-10-25 | Verification Integrity | Enforced fail-safe status rule: unexecuted, timed-out, or crashed checks emit `CHECK_ERROR` or `UNSUPPORTED`. Never report an unrun check as `VERIFIED_PASS`. |
 | **DEC-006** | 2026-10-25 | Pytest Isolation | Configured `pytest.ini` with `--import-mode=importlib` to avoid module naming collisions between top-level `tests/` and service-level `services/api/tests/`. |
 | **DEC-007** | 2026-10-26 | GitHub Checks API | Decoupled Check Run payload building and line-level annotations from transport. Operates in dry-run mode when unauthenticated, and posts checks when `GITHUB_TOKEN` is supplied. |
+| **DEC-008** | 2026-10-27 | Innovation (DIGEV) | Adopted Differential Invariant-Guided Execution Verification (DIGEV) as Invariant's primary differentiator: running synthesized reproduction tests across Base and Head commits to filter out hallucinations and pre-existing bugs. |
+| **DEC-009** | 2026-10-27 | IDE Integration | Implemented Model Context Protocol (MCP) server over standard I/O (JSON-RPC 2.0) with automated fix branch generation, enabling direct pair-programming in VS Code, Cursor, Windsurf, and Claude. |
 
 ---
 
@@ -92,3 +96,26 @@ This tracker serves as the authoritative, active development log for **Invariant
 * Implemented GitHub Checks API service (`GitHubChecksService`) with line-level annotations and dry-run fallback.
 * Added async background task execution to `/api/v1/runs/trigger` and enhanced webhook pull request event handling.
 * Expanded test suite from 16 to 35 integration tests with 100% pass rate. Verified with Black and Flake8 formatting checks.
+
+### Task 9: Model Context Protocol (MCP) & Automated Fix Engine (Completed)
+* Built lightweight stdio JSON-RPC 2.0 MCP server (`packages/mcp_server/server.py`) with 5 core tools:
+  - `invariant_verify`: Execute isolated sandbox verification runs.
+  - `invariant_get_spec`: Inspect parsed `INVARIANT.md` rules and contracts.
+  - `invariant_test_gaps`: Identify untested invariant clauses across codebase.
+  - `invariant_suggest_fix`: Synthesize candidate code patches using Gemini/OpenAI or heuristic engine.
+  - `invariant_create_fix_branch`: Automatically create Git fix branches, apply patches, and draft GitHub PR metadata (`packages/verifier/fix_generator.py`).
+* Implemented live Gemini REST provider (`packages/ai_engine/providers/gemini_provider.py`) and auto-selecting provider factory (`packages/ai_engine/factory.py`).
+* Created REST proxy endpoints in FastAPI (`services/api/app/api/v1/mcp.py`) and interactive MCP Playground in Next.js web dashboard (`/docs`).
+* Configured IDE integrations (`mcp_config.json`, `.vscode/mcp.json`, `.vscode/settings.json`, `.vscode/mcp-schema.json`, `docs/mcp-setup.md`).
+* Authored integration tests in `tests/test_mcp_server.py`, expanding test suite to 42 passing tests.
+
+### Task 10: Verification Intelligence Engine Research & Defensible Innovation (Completed)
+* Authored authoritative 10-section research investigation in `docs/verification-research.md`:
+  - Comparative evaluation of SonarQube, CodeQL, Semgrep, Snyk Code, GitHub Copilot Code Review, KLEE, and AFL++.
+  - Cross-analysis of 12 program verification and empirical testing methods.
+  - Identification of Invariant's primary competitive moat: **Differential Invariant-Guided Execution Verification (DIGEV)**.
+  - Full modular monolith architecture with Mermaid flowchart and component breakdown.
+  - 5-tier evidence-based classification taxonomy (`Reproduced`, `Strongly Supported`, `Potential`, `Inconclusive`, `False Positive`).
+  - Scientific accuracy evaluation methodology (150-PR benchmark corpus, Precision/Recall, Expected Calibration Error).
+  - 3-phase implementation roadmap and 4-layer defense-in-depth container sandboxing strategy.
+  - Direct answers to 6 strategic closing questions.

@@ -1,8 +1,93 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Head from "next/head";
+import { fetchMcpTools, executeMcpTool } from "../services/api";
 
 export default function DocsPage() {
-  const [activeView, setActiveView] = useState<"embedded" | "catalog">("embedded");
+  const [activeView, setActiveView] = useState<"embedded" | "mcp" | "catalog">("embedded");
+
+  // MCP Playground state
+  const [mcpTools, setMcpTools] = useState<any[]>([]);
+  const [selectedTool, setSelectedTool] = useState<string>("invariant_verify");
+  const [toolArgsText, setToolArgsText] = useState<string>("{}");
+  const [mcpLoading, setMcpLoading] = useState<boolean>(false);
+  const [mcpOutput, setMcpOutput] = useState<any>(null);
+  const [mcpError, setMcpError] = useState<string | null>(null);
+  const [copiedInspector, setCopiedInspector] = useState<boolean>(false);
+
+  // Pre-filled sample arguments for each tool
+  const sampleArgs: Record<string, any> = {
+    invariant_verify: {
+      workspace_path: "examples/inventory-api",
+      spec_path: "examples/inventory-api/INVARIANT.md",
+    },
+    invariant_get_spec: {
+      spec_path: "examples/inventory-api/INVARIANT.md",
+      workspace_path: "examples/inventory-api",
+    },
+    invariant_test_gaps: {
+      spec_path: "examples/inventory-api/INVARIANT.md",
+      workspace_path: "examples/inventory-api",
+    },
+    invariant_suggest_fix: {
+      invariant_rule: "Stock quantity for any SKU must never drop below 0.",
+      failure_trace: "AssertionError: Expected balance >= 0, but received -3 during concurrent reserve.",
+      file_path: "examples/inventory-api/src/inventory.py",
+    },
+    invariant_create_fix_branch: {
+      invariant_id: "INV-01",
+      finding_title: "Concurrent Reservation Race Condition Underflow",
+      file_path: "examples/inventory-api/src/inventory.py",
+      workspace_path: ".",
+    },
+  };
+
+  useEffect(() => {
+    fetchMcpTools()
+      .then((tools) => {
+        setMcpTools(tools);
+        if (tools.length > 0) {
+          const first = tools[0].name;
+          setSelectedTool(first);
+          setToolArgsText(JSON.stringify(sampleArgs[first] || {}, null, 2));
+        }
+      })
+      .catch((err) => {
+        console.warn("Failed to fetch MCP tools:", err);
+      });
+  }, []);
+
+  const handleToolSelect = (toolName: string) => {
+    setSelectedTool(toolName);
+    setToolArgsText(JSON.stringify(sampleArgs[toolName] || {}, null, 2));
+    setMcpOutput(null);
+    setMcpError(null);
+  };
+
+  const handleRunMcp = async () => {
+    setMcpLoading(true);
+    setMcpError(null);
+    try {
+      let parsedArgs = {};
+      if (toolArgsText.trim()) {
+        parsedArgs = JSON.parse(toolArgsText);
+      }
+      const res = await executeMcpTool(selectedTool, parsedArgs);
+      setMcpOutput(res);
+    } catch (err: any) {
+      setMcpError(err.message || "Failed to execute MCP tool.");
+    } finally {
+      setMcpLoading(false);
+    }
+  };
+
+  const copyInspectorCommand = () => {
+    const cmd = "npx @modelcontextprotocol/inspector python -m packages.mcp_server.server";
+    if (typeof window !== "undefined" && navigator?.clipboard) {
+      navigator.clipboard.writeText(cmd);
+      setCopiedInspector(true);
+      setTimeout(() => setCopiedInspector(false), 2000);
+    }
+  };
 
   const endpoints = [
     {
@@ -52,6 +137,21 @@ export default function DocsPage() {
           method: "GET",
           path: "/api/v1/runs/{run_id}/export/github-issue",
           desc: "Download pre-filled GitHub Issue draft for verified invariant failures.",
+        },
+      ],
+    },
+    {
+      group: "Model Context Protocol (MCP)",
+      items: [
+        {
+          method: "GET",
+          path: "/api/v1/mcp/tools",
+          desc: "List all 5 Model Context Protocol (MCP) tools and JSON schemas for IDE integration.",
+        },
+        {
+          method: "POST",
+          path: "/api/v1/mcp/execute",
+          desc: "Execute any MCP tool in real-time through the web playground runner.",
         },
       ],
     },
@@ -107,10 +207,12 @@ export default function DocsPage() {
     }
   };
 
+  const activeToolObj = mcpTools.find((t) => t.name === selectedTool);
+
   return (
     <>
       <Head>
-        <title>Swagger API Documentation &bull; Invariant</title>
+        <title>API Documentation & MCP Tools &bull; Invariant</title>
       </Head>
 
       <div className="space-y-6">
@@ -121,15 +223,18 @@ export default function DocsPage() {
               <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#1f6feb]/15 text-[#58a6ff] border border-[#1f6feb]/40">
                 OpenAPI 3.1 &bull; Swagger UI
               </span>
+              <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#bc8cff]/15 text-[#bc8cff] border border-[#bc8cff]/40">
+                MCP Protocol :stdio
+              </span>
               <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#238636]/15 text-[#3fb950] border border-[#238636]/40">
                 FastAPI :8000
               </span>
             </div>
             <h1 className="text-xl font-bold text-[#f0f6fc] mt-2">
-              API Documentation & Swagger UI
+              API Documentation & MCP Playground
             </h1>
             <p className="text-xs text-[#8b949e] mt-1">
-              Interactive API explorer powered by FastAPI, OpenAPI specifications, and Swagger UI.
+              Interactive API explorer powered by FastAPI Swagger UI and real-time Model Context Protocol (MCP) tooling.
             </p>
           </div>
 
@@ -171,7 +276,21 @@ export default function DocsPage() {
                 : "border-transparent text-[#8b949e] hover:text-[#c9d1d9]"
             }`}
           >
-            Live Swagger UI Frame
+            ⚡ Live Swagger UI
+          </button>
+          <button
+            onClick={() => setActiveView("mcp")}
+            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-colors flex items-center space-x-1.5 ${
+              activeView === "mcp"
+                ? "border-[#bc8cff] text-[#f0f6fc]"
+                : "border-transparent text-[#8b949e] hover:text-[#c9d1d9]"
+            }`}
+          >
+            <span>🤖</span>
+            <span>MCP Tools Playground</span>
+            <span className="px-1.5 py-0.2 rounded text-[10px] bg-[#bc8cff]/20 text-[#bc8cff]">
+              5 Tools
+            </span>
           </button>
           <button
             onClick={() => setActiveView("catalog")}
@@ -181,11 +300,12 @@ export default function DocsPage() {
                 : "border-transparent text-[#8b949e] hover:text-[#c9d1d9]"
             }`}
           >
-            REST Endpoints Catalog
+            📖 REST Endpoints Catalog
           </button>
         </div>
 
-        {activeView === "embedded" ? (
+        {/* Tab 1: Live Swagger UI Frame */}
+        {activeView === "embedded" && (
           <div className="border border-[#30363d] rounded-md overflow-hidden bg-[#161b22]">
             <div className="p-3 bg-[#21262d] border-b border-[#30363d] flex items-center justify-between text-xs font-mono text-[#8b949e]">
               <span>http://localhost:8000/docs</span>
@@ -204,7 +324,156 @@ export default function DocsPage() {
               title="FastAPI Swagger UI"
             />
           </div>
-        ) : (
+        )}
+
+        {/* Tab 2: MCP Tools Playground */}
+        {activeView === "mcp" && (
+          <div className="space-y-6">
+            {/* Anthropic Official Inspector Banner */}
+            <div className="p-4 rounded-md border border-[#bc8cff]/40 bg-[#bc8cff]/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-bold text-xs text-[#bc8cff] uppercase tracking-wider">
+                    Official Anthropic MCP Inspector UI
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#bc8cff]/20 text-[#bc8cff] font-mono">
+                    Interactive Web UI
+                  </span>
+                </div>
+                <p className="text-xs text-[#c9d1d9] mt-1">
+                  Just like Swagger UI for REST, Anthropic provides an official browser-based inspector for MCP servers. Run this command in your terminal to open it:
+                </p>
+                <code className="block mt-2 p-2 rounded bg-[#0d1117] border border-[#30363d] text-xs font-mono text-[#58a6ff] select-all">
+                  npx @modelcontextprotocol/inspector python -m packages.mcp_server.server
+                </code>
+              </div>
+              <button
+                onClick={copyInspectorCommand}
+                className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs font-mono shrink-0"
+              >
+                {copiedInspector ? "✓ Copied!" : "📋 Copy Inspector Command"}
+              </button>
+            </div>
+
+            {/* In-Dashboard Interactive MCP Tool Runner */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Tool Selector List */}
+              <div className="lg:col-span-4 space-y-2">
+                <label className="text-xs font-mono font-semibold text-[#8b949e] uppercase tracking-wider block">
+                  Select MCP Tool:
+                </label>
+                <div className="space-y-1.5">
+                  {[
+                    {
+                      name: "invariant_verify",
+                      title: "invariant_verify",
+                      desc: "Execute isolated test run against INVARIANT.md in sandbox.",
+                    },
+                    {
+                      name: "invariant_get_spec",
+                      title: "invariant_get_spec",
+                      desc: "Inspect active invariants, formal assertions & contracts.",
+                    },
+                    {
+                      name: "invariant_test_gaps",
+                      title: "invariant_test_gaps",
+                      desc: "AST test-gap matrix and starter test sketch generation.",
+                    },
+                    {
+                      name: "invariant_suggest_fix",
+                      title: "invariant_suggest_fix",
+                      desc: "AI-driven root-cause diagnosis & code patch suggestion.",
+                    },
+                    {
+                      name: "invariant_create_fix_branch",
+                      title: "invariant_create_fix_branch",
+                      desc: "Create local fix branch, apply patch & prepare PR metadata.",
+                    },
+                  ].map((tool) => (
+                    <button
+                      key={tool.name}
+                      onClick={() => handleToolSelect(tool.name)}
+                      className={`w-full text-left p-3 rounded-md border transition-all ${
+                        selectedTool === tool.name
+                          ? "bg-[#1f6feb]/15 border-[#1f6feb] text-[#f0f6fc]"
+                          : "bg-[#161b22] border-[#30363d] text-[#8b949e] hover:border-[#8b949e] hover:text-[#c9d1d9]"
+                      }`}
+                    >
+                      <div className="font-mono text-xs font-bold text-[#58a6ff]">
+                        {tool.title}
+                      </div>
+                      <div className="text-[11px] text-[#8b949e] mt-1 line-clamp-2">
+                        {tool.desc}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tool Arguments & Execution */}
+              <div className="lg:col-span-8 space-y-4">
+                <div className="p-4 rounded-md bg-[#161b22] border border-[#30363d] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold font-mono text-[#f0f6fc]">
+                        Tool: {selectedTool}
+                      </h3>
+                      <p className="text-xs text-[#8b949e] mt-0.5">
+                        {activeToolObj?.description || "Execute this tool against your workspace."}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleRunMcp}
+                      disabled={mcpLoading}
+                      className="btn-apple-liquid btn-apple-green px-4 py-2 text-xs font-semibold space-x-1.5"
+                    >
+                      <span>{mcpLoading ? "↻" : "▶"}</span>
+                      <span>{mcpLoading ? "Executing..." : "Execute MCP Tool"}</span>
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-mono text-[#8b949e] block mb-1">
+                      Arguments (JSON):
+                    </label>
+                    <textarea
+                      value={toolArgsText}
+                      onChange={(e) => setToolArgsText(e.target.value)}
+                      rows={6}
+                      className="w-full bg-[#0d1117] border border-[#30363d] rounded p-3 text-xs font-mono text-[#c9d1d9] focus:outline-none focus:border-[#58a6ff]"
+                    />
+                  </div>
+                </div>
+
+                {/* Error Banner */}
+                {mcpError && (
+                  <div className="p-4 rounded-md bg-[#da3633]/15 border border-[#da3633]/40 text-[#f85149] text-xs font-mono">
+                    <span className="font-bold">Execution Error: </span>
+                    {mcpError}
+                  </div>
+                )}
+
+                {/* Output Panel */}
+                {mcpOutput && (
+                  <div className="border border-[#30363d] rounded-md bg-[#161b22] overflow-hidden">
+                    <div className="p-3 bg-[#21262d] border-b border-[#30363d] flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#3fb950] font-semibold">
+                        ✓ Execution Output ({mcpOutput.status})
+                      </span>
+                      <span className="text-[#8b949e]">Tool: {mcpOutput.tool_name}</span>
+                    </div>
+                    <pre className="p-4 bg-[#0d1117] text-[#c9d1d9] text-xs font-mono overflow-x-auto max-h-[500px]">
+                      {JSON.stringify(mcpOutput.result, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: REST Catalog */}
+        {activeView === "catalog" && (
           <div className="space-y-6">
             {endpoints.map((group, gIdx) => (
               <div
