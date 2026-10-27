@@ -83,6 +83,53 @@ export default function ComparePage() {
           </p>
         </div>
 
+        {/* Quick Demo Scenarios */}
+        {runs.some((r) => r.id === "run_demo_baseline_a10f") && (
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-[#8b949e] font-mono text-[11px]">
+              Demo Scenarios:
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setBaseRunId("run_demo_baseline_a10f");
+                setHeadRunId("run_demo_regression_b21e");
+                router.push(
+                  "/compare?base=run_demo_baseline_a10f&head=run_demo_regression_b21e",
+                  undefined,
+                  { shallow: true }
+                );
+                performComparison(
+                  "run_demo_baseline_a10f",
+                  "run_demo_regression_b21e"
+                );
+              }}
+              className="px-2.5 py-1 rounded-md bg-[#da3633]/15 border border-[#da3633]/30 text-[#f85149] hover:bg-[#da3633]/25 transition font-mono text-[11px]"
+            >
+              ⚠ Baseline vs Invariant Regression (Detect Violation)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setBaseRunId("run_demo_regression_b21e");
+                setHeadRunId("run_demo_fixed_c34d");
+                router.push(
+                  "/compare?base=run_demo_regression_b21e&head=run_demo_fixed_c34d",
+                  undefined,
+                  { shallow: true }
+                );
+                performComparison(
+                  "run_demo_regression_b21e",
+                  "run_demo_fixed_c34d"
+                );
+              }}
+              className="px-2.5 py-1 rounded-md bg-[#238636]/15 border border-[#238636]/30 text-[#3fb950] hover:bg-[#238636]/25 transition font-mono text-[11px]"
+            >
+              ✓ Regression vs Fixed (Verify Resolution)
+            </button>
+          </div>
+        )}
+
         {/* Selection Bar */}
         <form
           onSubmit={handleCompareClick}

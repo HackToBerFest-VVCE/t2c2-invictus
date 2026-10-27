@@ -189,3 +189,22 @@ export function getExportUrl(
   return `${API_BASE_URL}/v1/runs/${encodeURIComponent(runId)}/export/${format}`;
 }
 
+/**
+ * Seed demonstration verification runs (baseline, regression, fixed).
+ */
+export async function seedDemoRuns(): Promise<{
+  status: string;
+  message: string;
+  runs: Array<{ id: string; status: string; commit: string }>;
+}> {
+  const res = await fetch(`${API_BASE_URL}/v1/seed`, {
+    method: "POST",
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Failed to seed demo runs: ${errText || res.statusText}`);
+  }
+  return await res.json();
+}
+
+

@@ -15,6 +15,7 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from ...core.database import get_db, SessionLocal
+from ...core.seed import seed_demo_data
 from ...models.models import VerificationRunDB, RepositoryDB, FindingDB
 from ...schemas.schemas import (
     VerificationRunResponse,
@@ -415,3 +416,9 @@ def export_run_github_issue(
             "Content-Disposition": f'attachment; filename="invariant-issue-draft-{run_id}.md"'
         },
     )
+
+
+@router.post("/seed")
+def seed_runs(db: Session = Depends(get_db)) -> dict:
+    """Seed sample verification runs and findings for end-to-end demonstration."""
+    return seed_demo_data(db=db)

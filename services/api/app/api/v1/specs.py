@@ -9,13 +9,29 @@ from ...services.test_gap_analyzer import TestGapAnalyzer
 router = APIRouter(prefix="/v1", tags=["Specifications"])
 
 
+def _resolve_spec_path(spec_path: str, workspace_path: str) -> str:
+    """Resolve specification path robustly."""
+    if os.path.isabs(spec_path) and os.path.exists(spec_path):
+        return spec_path
+    if os.path.exists(spec_path):
+        return spec_path
+    joined = os.path.join(workspace_path, spec_path)
+    if os.path.exists(joined):
+        return joined
+    if os.path.basename(spec_path) == "INVARIANT.md":
+        fallback = os.path.join(workspace_path, "INVARIANT.md")
+        if os.path.exists(fallback):
+            return fallback
+    return joined
+
+
 @router.get("/specs", response_model=SpecificationResponse)
 def get_specification(
     spec_path: str = Query("INVARIANT.md", description="Path to INVARIANT.md"),
     workspace_path: str = Query(".", description="Path to workspace root"),
 ) -> SpecificationResponse:
     """Retrieve parsed specification metadata and raw content."""
-    full_path = os.path.join(workspace_path, spec_path)
+    full_path = _resolve_spec_path(spec_path, workspace_path)
     if not os.path.exists(full_path):
         raise HTTPException(
             status_code=404,
@@ -44,7 +60,7 @@ def analyze_specification_coverage(
     workspace_path: str = Query(".", description="Path to workspace root"),
 ) -> SpecAnalysisResponse:
     """Perform test-gap analysis cross-referencing INVARIANT.md against workspace test suites."""
-    full_path = os.path.join(workspace_path, spec_path)
+    full_path = _resolve_spec_path(spec_path, workspace_path)
     if not os.path.exists(full_path):
         raise HTTPException(
             status_code=404,

@@ -19,6 +19,11 @@ export default function DocsPage() {
           desc: "Trigger a verification run synchronously or asynchronously via background tasks.",
         },
         {
+          method: "POST",
+          path: "/api/v1/seed",
+          desc: "Seed baseline, regression, and resolution verification runs for live demonstration.",
+        },
+        {
           method: "GET",
           path: "/api/v1/runs/{run_id}",
           desc: "Retrieve detailed verification run results, timings, and findings.",
