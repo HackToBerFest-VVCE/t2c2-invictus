@@ -38,6 +38,25 @@ module.exports = {
           "monospace",
         ],
       },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        pulseGlow: {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(63, 185, 80, 0.4)' },
+          '50%': { boxShadow: '0 0 0 4px rgba(63, 185, 80, 0)' },
+        },
+      },
+      animation: {
+        fadeIn: 'fadeIn 0.2s ease-out',
+        fadeInUp: 'fadeInUp 0.25s ease-out both',
+        pulseGlow: 'pulseGlow 2s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

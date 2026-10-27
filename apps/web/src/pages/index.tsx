@@ -86,42 +86,54 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 4 Stat Cards (Clean GitHub style) */}
+        {/* 4 Stat Cards (GitHub style with hover animations) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-4 rounded-md border border-[#30363d] bg-[#161b22]">
-            <span className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider block">
-              Total Runs
-            </span>
+          <div className="stat-card p-4 rounded-md border border-[#30363d] bg-[#161b22] hover:border-[#58a6ff]/50 animate-fadeInUp">
+            <div className="flex items-center space-x-1.5 mb-1">
+              <svg className="w-3.5 h-3.5 text-[#8b949e]" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 8a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0zM8 0a8 8 0 100 16A8 8 0 008 0zM6.379 5.227A.25.25 0 006 5.442v5.117a.25.25 0 00.379.214l4.264-2.559a.25.25 0 000-.428L6.379 5.227z" /></svg>
+              <span className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider">
+                Total Runs
+              </span>
+            </div>
             <div className="text-2xl font-bold font-mono text-[#f0f6fc] mt-1.5">
               {totalRuns}
             </div>
             <div className="text-[11px] text-[#8b949e] mt-1">Evaluated commits</div>
           </div>
 
-          <div className="p-4 rounded-md border border-[#238636]/40 bg-[#238636]/10">
-            <span className="text-xs font-semibold text-[#3fb950] uppercase tracking-wider block">
-              Verified Passes
-            </span>
+          <div className="stat-card p-4 rounded-md border border-[#238636]/40 bg-[#238636]/10 hover:border-[#3fb950]/70 animate-fadeInUp" style={{ animationDelay: '50ms' }}>
+            <div className="flex items-center space-x-1.5 mb-1">
+              <svg className="w-3.5 h-3.5 text-[#3fb950]" fill="currentColor" viewBox="0 0 16 16"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" /></svg>
+              <span className="text-xs font-semibold text-[#3fb950] uppercase tracking-wider">
+                Verified Passes
+              </span>
+            </div>
             <div className="text-2xl font-bold font-mono text-[#3fb950] mt-1.5">
               {passedRuns}
             </div>
             <div className="text-[11px] text-[#3fb950]/80 mt-1">100% assertions upheld</div>
           </div>
 
-          <div className="p-4 rounded-md border border-[#da3633]/40 bg-[#da3633]/10">
-            <span className="text-xs font-semibold text-[#f85149] uppercase tracking-wider block">
-              Verified Failures
-            </span>
+          <div className="stat-card p-4 rounded-md border border-[#da3633]/40 bg-[#da3633]/10 hover:border-[#f85149]/70 animate-fadeInUp" style={{ animationDelay: '100ms' }}>
+            <div className="flex items-center space-x-1.5 mb-1">
+              <svg className="w-3.5 h-3.5 text-[#f85149]" fill="currentColor" viewBox="0 0 16 16"><path d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z" /></svg>
+              <span className="text-xs font-semibold text-[#f85149] uppercase tracking-wider">
+                Verified Failures
+              </span>
+            </div>
             <div className="text-2xl font-bold font-mono text-[#f85149] mt-1.5">
               {failedRuns}
             </div>
             <div className="text-[11px] text-[#f85149]/80 mt-1">Blocking violations</div>
           </div>
 
-          <div className="p-4 rounded-md border border-[#bc8cff]/40 bg-[#bc8cff]/10">
-            <span className="text-xs font-semibold text-[#bc8cff] uppercase tracking-wider block">
-              AI Hypotheses
-            </span>
+          <div className="stat-card p-4 rounded-md border border-[#bc8cff]/40 bg-[#bc8cff]/10 hover:border-[#d2a8ff]/70 animate-fadeInUp" style={{ animationDelay: '150ms' }}>
+            <div className="flex items-center space-x-1.5 mb-1">
+              <svg className="w-3.5 h-3.5 text-[#bc8cff]" fill="currentColor" viewBox="0 0 16 16"><path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 001.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 00-1.828 1.829l-.645 1.936a.361.361 0 01-.686 0l-.645-1.937a2.89 2.89 0 00-1.828-1.828l-1.937-.645a.361.361 0 010-.686l1.937-.645a2.89 2.89 0 001.828-1.829l.645-1.936zM3.794 1.148a.217.217 0 01.412 0l.387 1.162c.173.518.5.845 1.017 1.018l1.162.387a.217.217 0 010 .412l-1.162.387c-.518.173-.844.5-1.017 1.017l-.387 1.162a.217.217 0 01-.412 0l-.387-1.162A1.734 1.734 0 002.39 4.527l-1.162-.387a.217.217 0 010-.412l1.162-.387A1.734 1.734 0 003.407 2.31l.387-1.162zM10.863.099a.145.145 0 01.274 0l.258.774c.115.346.334.564.68.68l.774.258a.145.145 0 010 .274l-.774.258c-.346.115-.565.334-.68.68l-.258.774a.145.145 0 01-.274 0l-.258-.774a1.156 1.156 0 00-.68-.68l-.774-.258a.145.145 0 010-.274l.774-.258c.346-.115.565-.334.68-.68L10.863.1z" /></svg>
+              <span className="text-xs font-semibold text-[#bc8cff] uppercase tracking-wider">
+                AI Hypotheses
+              </span>
+            </div>
             <div className="text-2xl font-bold font-mono text-[#bc8cff] mt-1.5">
               {aiHypothesisRuns}
             </div>
