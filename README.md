@@ -445,11 +445,12 @@ For the full security assessment, see the [docs/threat-model.md](docs/threat-mod
 ## 17. Roadmap
 
 * [x] **Milestone 1**: Core system architecture, specification schema, and threat model specification.
-* [ ] **Milestone 2**: Ingestion API with HMAC validation and `INVARIANT.md` AST parser.
-* [ ] **Milestone 3**: Ephemeral Docker sandbox runner with cgroup resource constraints and timeout watchdogs.
-* [ ] **Milestone 4**: Findings classification engine and SQLite persistence layer.
-* [ ] **Milestone 5**: GitHub Checks API integration and PR annotation reporter.
-* [ ] **Milestone 6**: Minimal web dashboard for run exploration and trend analysis.
+* [x] **Milestone 2**: Ingestion API with HMAC validation and `INVARIANT.md` AST parser.
+* [x] **Milestone 3**: Ephemeral runner sandbox with resource constraints and timeout watchdogs.
+* [x] **Milestone 4**: Findings classification engine, lifecycle tracker, and SQLite persistence layer.
+* [x] **Milestone 5**: GitHub Checks API integration, PR annotation reporter, and export generators.
+* [x] **Milestone 6**: Web dashboard for continuous verification, run exploration, and test gap analysis.
+* [ ] **Milestone 7**: Extended multi-language verification engines (Rust, Go) and distributed cloud runners.
 
 ---
 

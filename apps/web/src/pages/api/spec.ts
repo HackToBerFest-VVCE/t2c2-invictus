@@ -6,9 +6,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     // Resolve root INVARIANT.md or example INVARIANT.md
     const possiblePaths = [
+      path.resolve(process.cwd(), "../INVARIANT.md"),
+      path.resolve(process.cwd(), "INVARIANT.md"),
+      path.resolve(process.cwd(), "../examples/inventory-api/INVARIANT.md"),
+      path.resolve(process.cwd(), "examples/inventory-api/INVARIANT.md"),
       path.resolve(process.cwd(), "../../INVARIANT.md"),
       path.resolve(process.cwd(), "../../examples/inventory-api/INVARIANT.md"),
-      path.resolve(process.cwd(), "../INVARIANT.md"),
     ];
 
     let foundPath = "";

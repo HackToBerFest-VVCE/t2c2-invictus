@@ -27,7 +27,9 @@ export const Navbar: React.FC = () => {
   const navItems = [
     { label: "Verification Runs", href: "/" },
     { label: "Repositories", href: "/repositories" },
+    { label: "Compare Runs", href: "/compare" },
     { label: "Specification", href: "/spec" },
+    { label: "Swagger Docs", href: "/docs" },
   ];
 
   return (
@@ -88,6 +90,18 @@ export const Navbar: React.FC = () => {
                   </strong>
                 </span>
               </div>
+
+              {/* Direct Link to Interactive Swagger UI */}
+              <a
+                href="http://localhost:8000/docs"
+                target="_blank"
+                rel="noreferrer"
+                className="hidden lg:flex items-center space-x-1 px-2.5 py-1 rounded-md text-xs font-mono border border-[#30363d] bg-[#0d1117] text-[#58a6ff] hover:border-[#58a6ff] transition-colors"
+                title="Open Interactive Swagger UI in a new tab"
+              >
+                <span>⚡ Swagger UI</span>
+                <span className="text-[10px]">↗</span>
+              </a>
 
               {/* Apple OS Liquid Green Button */}
               <button

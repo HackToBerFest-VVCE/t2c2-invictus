@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { VerificationRun } from "../../types";
-import { fetchRun } from "../../services/api";
+import { fetchRun, getExportUrl } from "../../services/api";
 import { StatusBadge } from "../../components/StatusBadge";
 import { FindingCard } from "../../components/FindingCard";
 import { TriggerModal } from "../../components/TriggerModal";
@@ -119,12 +119,48 @@ export default function RunDetailsPage() {
             <span>Back to Verification Runs</span>
           </Link>
 
-          <button
-            onClick={() => setIsTriggerOpen(true)}
-            className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs font-medium"
-          >
-            Re-run Verification
-          </button>
+          <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+            <Link
+              href={`/compare?head=${run.id}`}
+              className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs font-medium"
+            >
+              ⇄ Compare Run
+            </Link>
+
+            <a
+              href={getExportUrl(run.id, "markdown")}
+              download
+              className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs font-medium"
+              title="Download GitHub-Flavored Markdown report"
+            >
+              ↓ Markdown
+            </a>
+
+            <a
+              href={getExportUrl(run.id, "json")}
+              download
+              className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs font-medium"
+              title="Download machine-readable JSON report"
+            >
+              ↓ JSON
+            </a>
+
+            <a
+              href={getExportUrl(run.id, "github-issue")}
+              download
+              className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs font-medium"
+              title="Download pre-filled GitHub Issue draft"
+            >
+              ↓ Issue Draft
+            </a>
+
+            <button
+              onClick={() => setIsTriggerOpen(true)}
+              className="btn-apple-liquid btn-apple-secondary px-3 py-1.5 text-xs font-medium"
+            >
+              Re-run Verification
+            </button>
+          </div>
         </div>
 
         {/* Header Panel */}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Finding } from "../types";
 import { StatusBadge } from "./StatusBadge";
+import { updateFindingStatus } from "../services/api";
 
 interface FindingCardProps {
   finding: Finding;
@@ -10,6 +11,24 @@ export const FindingCard: React.FC<FindingCardProps> = ({ finding }) => {
   const [expandedTrace, setExpandedTrace] = useState<boolean>(true);
   const [copiedCmd, setCopiedCmd] = useState<boolean>(false);
   const [copiedScript, setCopiedScript] = useState<boolean>(false);
+  const [lifecycleStatus, setLifecycleStatus] = useState<string>(
+    finding.lifecycle_status || "unconfirmed"
+  );
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+
+  const handleLifecycleChange = async (
+    newStatus: "unconfirmed" | "confirmed" | "resolved" | "dismissed"
+  ) => {
+    setIsUpdating(true);
+    try {
+      setLifecycleStatus(newStatus);
+      await updateFindingStatus(finding.id, newStatus);
+    } catch (err) {
+      console.error("Failed to update finding status", err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const copyToClipboard = (text: string, isScript = false) => {
     navigator.clipboard.writeText(text);
@@ -75,6 +94,20 @@ ${cmd}
     }
   };
 
+  const getLifecycleStyle = (status: string) => {
+    switch (status) {
+      case "confirmed":
+        return "bg-[#1f6feb]/20 text-[#58a6ff] border-[#388bfd]/40";
+      case "resolved":
+        return "bg-[#238636]/20 text-[#3fb950] border-[#2ea043]/40";
+      case "dismissed":
+        return "bg-[#30363d] text-[#8b949e] border-[#484f58]";
+      case "unconfirmed":
+      default:
+        return "bg-[#d29922]/15 text-[#e3b341] border-[#d29922]/30";
+    }
+  };
+
   return (
     <div className="border border-[#30363d] rounded-md bg-[#161b22] overflow-hidden text-[#c9d1d9] space-y-0">
       {/* Finding Header */}
@@ -96,6 +129,13 @@ ${cmd}
             >
               {finding.severity}
             </span>
+            <span
+              className={`text-xs font-medium px-2 py-0.5 rounded border font-mono uppercase tracking-wide ${getLifecycleStyle(
+                lifecycleStatus
+              )}`}
+            >
+              ● {lifecycleStatus}
+            </span>
             {finding.ai_assisted && (
               <span className="text-xs px-2 py-0.5 rounded bg-[#bc8cff]/15 text-[#d2a8ff] border border-[#bc8cff]/40 font-mono">
                 ✦ AI-Engine Assisted
@@ -105,7 +145,51 @@ ${cmd}
           <h4 className="text-sm font-semibold text-[#f0f6fc] mt-1">{finding.title}</h4>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+          {/* Lifecycle Action Buttons */}
+          <div className="flex items-center space-x-1.5 bg-[#0d1117] p-1 rounded border border-[#30363d]">
+            {lifecycleStatus !== "confirmed" && lifecycleStatus !== "resolved" && (
+              <button
+                onClick={() => handleLifecycleChange("confirmed")}
+                disabled={isUpdating}
+                className="btn-apple-liquid btn-apple-secondary text-[11px] px-2 py-0.5 font-medium hover:text-[#58a6ff]"
+                title="Mark this finding as confirmed"
+              >
+                Confirm
+              </button>
+            )}
+            {lifecycleStatus !== "resolved" && (
+              <button
+                onClick={() => handleLifecycleChange("resolved")}
+                disabled={isUpdating}
+                className="btn-apple-liquid btn-apple-secondary text-[11px] px-2 py-0.5 font-medium hover:text-[#3fb950]"
+                title="Mark this finding as resolved"
+              >
+                Resolve
+              </button>
+            )}
+            {lifecycleStatus !== "dismissed" && (
+              <button
+                onClick={() => handleLifecycleChange("dismissed")}
+                disabled={isUpdating}
+                className="btn-apple-liquid btn-apple-secondary text-[11px] px-2 py-0.5 font-medium hover:text-[#f85149]"
+                title="Dismiss this finding"
+              >
+                Dismiss
+              </button>
+            )}
+            {(lifecycleStatus === "resolved" || lifecycleStatus === "dismissed") && (
+              <button
+                onClick={() => handleLifecycleChange("unconfirmed")}
+                disabled={isUpdating}
+                className="btn-apple-liquid btn-apple-secondary text-[11px] px-2 py-0.5 font-medium"
+                title="Reopen finding"
+              >
+                Reopen
+              </button>
+            )}
+          </div>
+
           <StatusBadge status={finding.verification_status} size="sm" />
         </div>
       </div>

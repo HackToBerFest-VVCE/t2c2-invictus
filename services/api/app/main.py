@@ -11,10 +11,46 @@ from .webhooks.github import router as webhooks_router
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
+    tags_metadata = [
+        {
+            "name": "Verification Runs",
+            "description": (
+                "Trigger runs, list verification history, compare runs across commits, "
+                "manage finding lifecycles, and export reports in Markdown/JSON."
+            ),
+        },
+        {
+            "name": "Specifications",
+            "description": (
+                "Parse declarative INVARIANT.md specifications and execute automated "
+                "AST test-gap analysis against project test suites."
+            ),
+        },
+        {
+            "name": "Webhooks",
+            "description": (
+                "GitHub webhook ingress handling push and pull_request events with "
+                "HMAC-SHA256 signature verification and delivery deduplication."
+            ),
+        },
+        {
+            "name": "Health",
+            "description": "Service health check and version metadata.",
+        },
+    ]
+
     app = FastAPI(
-        title="Invariant API",
-        description="Continuous Verification for Every Commit",
+        title="Invariant Continuous Verification API",
+        description=(
+            "### Invariant API\n\n"
+            "Continuous Verification for Every Commit.\n\n"
+            "* **Fail-Safe Verification Taxonomy**: Strict 6-tier verification status model.\n"
+            "* **Evidence-Backed**: Collects exit codes, traces, and reproduction commands.\n"
+            "* **HMAC Cryptographic Validation**: Constant-time signature verification.\n"
+            "* **GitHub Checks API**: Generates check runs and line-level diff annotations."
+        ),
         version="0.1.0",
+        openapi_tags=tags_metadata,
         docs_url="/docs",
         redoc_url="/redoc",
     )

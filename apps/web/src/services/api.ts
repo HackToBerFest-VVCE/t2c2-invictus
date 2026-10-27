@@ -3,6 +3,9 @@ import {
   Repository,
   ManualTriggerRequest,
   BackendHealth,
+  Finding,
+  SpecAnalysis,
+  RunComparison,
 } from "../types";
 
 const API_BASE_URL =
@@ -114,3 +117,75 @@ export async function triggerManualRun(
 
   return await res.json();
 }
+
+/**
+ * Fetch specification analysis and test-gap coverage.
+ */
+export async function analyzeSpecification(
+  specPath: string = "INVARIANT.md",
+  workspacePath: string = "."
+): Promise<SpecAnalysis> {
+  const url = `${API_BASE_URL}/v1/specs/analyze?spec_path=${encodeURIComponent(
+    specPath
+  )}&workspace_path=${encodeURIComponent(workspacePath)}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Failed to analyze specification (${res.status} ${res.statusText})`);
+  }
+  return await res.json();
+}
+
+/**
+ * Compare two verification runs to detect regressions and resolved issues.
+ */
+export async function compareRuns(
+  baseRunId: string,
+  headRunId: string
+): Promise<RunComparison> {
+  const url = `${API_BASE_URL}/v1/runs/compare?base_run_id=${encodeURIComponent(
+    baseRunId
+  )}&head_run_id=${encodeURIComponent(headRunId)}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Failed to compare runs (${res.status} ${res.statusText})`);
+  }
+  return await res.json();
+}
+
+/**
+ * Update the lifecycle status of a finding (e.g. unconfirmed -> confirmed -> resolved).
+ */
+export async function updateFindingStatus(
+  findingId: string,
+  lifecycleStatus: "unconfirmed" | "confirmed" | "resolved" | "dismissed",
+  reviewerNotes?: string
+): Promise<Finding> {
+  const res = await fetch(`${API_BASE_URL}/v1/findings/${findingId}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      lifecycle_status: lifecycleStatus,
+      reviewer_notes: reviewerNotes,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Failed to update finding status: ${errText || res.statusText}`);
+  }
+
+  return await res.json();
+}
+
+/**
+ * Get direct download link for verification run reports.
+ */
+export function getExportUrl(
+  runId: string,
+  format: "markdown" | "json" | "github-issue"
+): string {
+  return `${API_BASE_URL}/v1/runs/${encodeURIComponent(runId)}/export/${format}`;
+}
+
