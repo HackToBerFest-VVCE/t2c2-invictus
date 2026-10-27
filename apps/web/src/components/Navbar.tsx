@@ -4,9 +4,11 @@ import { useRouter } from "next/router";
 import { checkBackendHealth } from "../services/api";
 import { BackendHealth } from "../types";
 import { TriggerModal } from "./TriggerModal";
+import { useRepo } from "../context/RepoContext";
 
 export const Navbar: React.FC = () => {
   const router = useRouter();
+  const { activeRepo, setActiveRepo, repositories } = useRepo();
   const [health, setHealth] = useState<BackendHealth>({
     status: "checking",
     service: "invariant-api",
@@ -14,8 +16,10 @@ export const Navbar: React.FC = () => {
   });
   const [isTriggerOpen, setIsTriggerOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isRepoDropdownOpen, setIsRepoDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const repoDropdownRef = useRef<HTMLDivElement>(null);
 
   const loadHealth = () => {
     checkBackendHealth().then((h) => setHealth(h));
@@ -27,11 +31,14 @@ export const Navbar: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Close profile dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setIsProfileOpen(false);
+      }
+      if (repoDropdownRef.current && !repoDropdownRef.current.contains(e.target as Node)) {
+        setIsRepoDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -42,6 +49,7 @@ export const Navbar: React.FC = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsProfileOpen(false);
+    setIsRepoDropdownOpen(false);
   }, [router.pathname]);
 
   // Profile comes FIRST as requested!
@@ -136,20 +144,89 @@ export const Navbar: React.FC = () => {
 
               <span className="text-[#8b949e] hidden sm:inline">/</span>
 
-              <div className="hidden sm:flex items-center space-x-1.5 text-xs text-[#8b949e] truncate">
-                <span className="hover:text-[#f0f6fc] cursor-pointer hidden md:inline transition-colors">
-                  HackToBerFest-VVCE
-                </span>
-                <span className="hidden md:inline text-[#8b949e]">/</span>
+              <div className="hidden sm:flex items-center space-x-1.5 text-xs text-[#8b949e]">
                 <Link
-                  href="/"
-                  className="font-semibold text-[#f0f6fc] hover:text-[#58a6ff] transition-colors truncate"
+                  href="/profile"
+                  className="hover:text-[#f0f6fc] cursor-pointer hidden md:inline transition-colors font-mono"
                 >
-                  t2c2-invictus
+                  srinivas2s
                 </Link>
-                <span className="text-[11px] px-2 py-0.5 rounded-full border border-[#30363d] text-[#8b949e] ml-1">
-                  Public
-                </span>
+                <span className="hidden md:inline text-[#8b949e]">/</span>
+
+                {/* Interactive Dynamic Repository Selector */}
+                <div className="relative inline-flex items-center" ref={repoDropdownRef}>
+                  <button
+                    onClick={() => setIsRepoDropdownOpen(!isRepoDropdownOpen)}
+                    className="flex items-center space-x-1 font-semibold text-[#f0f6fc] hover:text-[#58a6ff] hover:bg-[#21262d] px-1.5 py-0.5 rounded transition-colors group cursor-pointer"
+                    title="Switch active repository"
+                  >
+                    <span className="truncate max-w-[150px] sm:max-w-[200px]">
+                      {activeRepo.name}
+                    </span>
+                    <svg
+                      className={`w-3 h-3 text-[#8b949e] group-hover:text-[#f0f6fc] transition-transform ${
+                        isRepoDropdownOpen ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <span
+                    className={`text-[11px] px-2 py-0.5 rounded-full border transition-colors ml-1 ${
+                      activeRepo.visibility === "Private"
+                        ? "text-[#e3b341] bg-[#d29922]/10 border-[#d29922]/30"
+                        : "text-[#8b949e] bg-[#21262d]/50 border-[#30363d]"
+                    }`}
+                  >
+                    {activeRepo.visibility}
+                  </span>
+
+                  {/* Repository Switcher Dropdown */}
+                  {isRepoDropdownOpen && (
+                    <div className="absolute left-0 top-full mt-2 w-72 bg-[#161b22] border border-[#30363d] rounded-md shadow-2xl py-1 z-50">
+                      <div className="px-3 py-2 border-b border-[#30363d] text-[11px] font-semibold text-[#8b949e] uppercase tracking-wider flex items-center justify-between">
+                        <span>Switch Repository</span>
+                        <span className="text-xs font-mono">{repositories.length} repos</span>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto divide-y divide-[#21262d]/50">
+                        {repositories.map((repo) => {
+                          const isCurrent = repo.name === activeRepo.name;
+                          return (
+                            <button
+                              key={repo.name}
+                              onClick={() => {
+                                setActiveRepo(repo);
+                                setIsRepoDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-3 py-2.5 flex items-center justify-between text-xs hover:bg-[#21262d] transition-colors ${
+                                isCurrent ? "bg-[#1f6feb]/10 text-[#58a6ff]" : "text-[#c9d1d9]"
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2 truncate min-w-0 pr-2">
+                                <span
+                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                    isCurrent ? "bg-[#58a6ff]" : "bg-[#30363d]"
+                                  }`}
+                                />
+                                <span className={`font-mono truncate ${isCurrent ? "font-semibold text-[#58a6ff]" : ""}`}>
+                                  {repo.name}
+                                </span>
+                              </div>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded border border-[#30363d] text-[#8b949e] flex-shrink-0">
+                                {repo.visibility}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -222,16 +299,18 @@ export const Navbar: React.FC = () => {
                 </svg>
               </a>
 
-              {/* Profile Avatar & Dropdown (Decent Monogram, NO Neon Gradient, NO Octocat) */}
+              {/* Profile Avatar & Dropdown (Srinivas P Photo) */}
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-1.5 p-0.5 rounded-md hover:bg-[#21262d] transition-colors"
+                  className="flex items-center space-x-1.5 p-0.5 rounded-full hover:ring-1 hover:ring-[#8b949e] transition-all"
                   aria-label="User profile menu"
                 >
-                  <div className="w-7 h-7 rounded-md bg-[#21262d] border border-[#30363d] flex items-center justify-center text-[#f0f6fc] font-mono font-bold text-xs select-none">
-                    INV
-                  </div>
+                  <img
+                    src="/profile.jpg"
+                    alt="Srinivas P"
+                    className="w-7 h-7 rounded-full object-cover border border-[#30363d]"
+                  />
                   <svg
                     className={`w-3 h-3 text-[#8b949e] transition-transform ${isProfileOpen ? "rotate-180" : ""}`}
                     fill="none"
@@ -253,20 +332,22 @@ export const Navbar: React.FC = () => {
                       className="block px-4 py-3 border-b border-[#30363d] hover:bg-[#21262d] transition-colors group cursor-pointer"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-9 h-9 rounded-md bg-[#21262d] border border-[#30363d] flex items-center justify-center font-mono font-bold text-xs text-[#f0f6fc] flex-shrink-0">
-                          INV
-                        </div>
+                        <img
+                          src="/profile.jpg"
+                          alt="Srinivas P"
+                          className="w-9 h-9 rounded-full object-cover border border-[#30363d] flex-shrink-0"
+                        />
                         <div className="min-w-0">
                           <div className="text-sm font-semibold text-[#f0f6fc] group-hover:text-[#58a6ff] transition-colors truncate">
-                            INVICTUS
+                            Srinivas P
                           </div>
                           <div className="text-xs text-[#8b949e] font-mono truncate">
-                            HackToBerFest-VVCE
+                            srinivas2s
                           </div>
                         </div>
                       </div>
                       <div className="mt-2 text-[11px] text-[#8b949e] group-hover:text-[#58a6ff] flex items-center space-x-1 transition-colors">
-                        <span>Open Team Profile</span>
+                        <span>View Profile</span>
                         <span>→</span>
                       </div>
                     </Link>

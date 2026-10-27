@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { triggerManualRun } from "../services/api";
+import { useRepo } from "../context/RepoContext";
 
 interface TriggerModalProps {
   isOpen: boolean;
@@ -14,13 +15,20 @@ export const TriggerModal: React.FC<TriggerModalProps> = ({
   onSuccess,
 }) => {
   const router = useRouter();
+  const { activeRepo } = useRepo();
   const [workspacePath, setWorkspacePath] = useState("examples/inventory-api");
   const [specPath, setSpecPath] = useState("examples/inventory-api/INVARIANT.md");
   const [branch, setBranch] = useState("main");
   const [commitSha, setCommitSha] = useState("HEAD");
-  const [repoId, setRepoId] = useState("t2c2-invictus");
+  const [repoId, setRepoId] = useState(activeRepo.name);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeRepo?.name) {
+      setRepoId(activeRepo.name);
+    }
+  }, [activeRepo?.name]);
 
   if (!isOpen) return null;
 

@@ -15,13 +15,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       case "VERIFIED_PASS":
         return {
           bg: "bg-[#238636]/15 border-[#238636]/50 text-[#3fb950]",
-          icon: "✔",
+          icon: "✓",
           label: "Verified Pass",
         };
       case "VERIFIED_FAILURE":
         return {
           bg: "bg-[#da3633]/15 border-[#da3633]/50 text-[#f85149]",
-          icon: "✖",
+          icon: "✕",
           label: "Verified Failure",
         };
       case "STATIC_WARNING":
@@ -39,7 +39,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       case "CHECK_ERROR":
         return {
           bg: "bg-[#da3633]/20 border-[#f85149]/60 text-[#ff7b72]",
-          icon: "⛔",
+          icon: "⊘",
           label: "Check Error",
         };
       case "UNSUPPORTED":

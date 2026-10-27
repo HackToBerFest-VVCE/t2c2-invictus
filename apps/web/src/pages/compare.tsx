@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { fetchRuns, compareRuns } from "../services/api";
 import { VerificationRun, RunComparison } from "../types";
 import { FindingCard } from "../components/FindingCard";
+import { ALL_DEMO_REPOSITORIES, ExtendedRepository } from "../data/demoData";
 
 export default function ComparePage() {
   const router = useRouter();
@@ -17,41 +18,89 @@ export default function ComparePage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Load available runs for selection
-  useEffect(() => {
-    fetchRuns()
-      .then((data) => {
-        setRuns(data);
-        if (data.length >= 2) {
-          const initialHead = (head as string) || data[0].id;
-          const initialBase = (base as string) || data[1].id;
-          setHeadRunId(initialHead);
-          setBaseRunId(initialBase);
-          performComparison(initialBase, initialHead);
-        } else if (data.length === 1) {
-          setHeadRunId(data[0].id);
-          setBaseRunId(data[0].id);
-        }
-      })
-      .catch((err) => {
-        setErrorMsg(err.message || "Failed to load verification runs.");
-      });
-  }, [base, head]);
-
-  const performComparison = (baseId: string, headId: string) => {
+  const performComparison = (baseId: string, headId: string, optionalRuns?: VerificationRun[]) => {
     if (!baseId || !headId) return;
     setLoading(true);
     setErrorMsg(null);
+
+    const runList = optionalRuns && optionalRuns.length > 0 ? optionalRuns : runs;
+
     compareRuns(baseId, headId)
       .then((res) => {
         setComparison(res);
       })
-      .catch((err) => {
-        setErrorMsg(err.message || "Failed to compare verification runs.");
-        setComparison(null);
+      .catch(() => {
+        // Compute comparison between the runs if backend endpoint is unavailable for demo runs
+        const b = runList.find((r) => r.id === baseId);
+        const h = runList.find((r) => r.id === headId);
+
+        if (b && h) {
+          const bFindings = b.findings || [];
+          const hFindings = h.findings || [];
+          const newRegs = hFindings.filter((hf) => !bFindings.some((bf) => bf.id === hf.id));
+          const resolved = bFindings.filter((bf) => !hFindings.some((hf) => hf.id === bf.id));
+          const persistent = hFindings.filter((hf) => bFindings.some((bf) => bf.id === hf.id));
+
+          setComparison({
+            base_run_id: baseId,
+            head_run_id: headId,
+            new_regressions: newRegs,
+            resolved_findings: resolved,
+            persistent_findings: persistent,
+            total_regressions: newRegs.length,
+            total_resolved: resolved.length,
+            total_persistent: persistent.length,
+            summary: `Compared [${b.repository_id}] ${b.id} against [${h.repository_id}] ${h.id}: ${newRegs.length} regressions, ${resolved.length} resolved.`,
+          });
+          setErrorMsg(null);
+        } else {
+          setErrorMsg("Failed to compare verification runs.");
+          setComparison(null);
+        }
       })
       .finally(() => setLoading(false));
   };
+
+  // Load available runs for selection from backend + all demo repositories
+  useEffect(() => {
+    const allDemoRuns: VerificationRun[] = ALL_DEMO_REPOSITORIES.flatMap(
+      (r: ExtendedRepository) => r.recent_runs || []
+    );
+
+    fetchRuns()
+      .then((data: VerificationRun[]) => {
+        const runMap = new Map<string, VerificationRun>();
+        data.forEach((r: VerificationRun) => runMap.set(r.id, r));
+        allDemoRuns.forEach((r: VerificationRun) => {
+          if (!runMap.has(r.id)) runMap.set(r.id, r);
+        });
+
+        const combined = Array.from(runMap.values());
+        combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setRuns(combined);
+
+        if (combined.length >= 2) {
+          const initialHead = (head as string) || combined[0].id;
+          const initialBase = (base as string) || combined[1].id;
+          setHeadRunId(initialHead);
+          setBaseRunId(initialBase);
+          performComparison(initialBase, initialHead, combined);
+        } else if (combined.length === 1) {
+          setHeadRunId(combined[0].id);
+          setBaseRunId(combined[0].id);
+        }
+      })
+      .catch(() => {
+        setRuns(allDemoRuns);
+        if (allDemoRuns.length >= 2) {
+          const initialHead = (head as string) || allDemoRuns[0].id;
+          const initialBase = (base as string) || allDemoRuns[1].id;
+          setHeadRunId(initialHead);
+          setBaseRunId(initialBase);
+          performComparison(initialBase, initialHead, allDemoRuns);
+        }
+      });
+  }, [base, head]);
 
   const handleCompareClick = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,67 +117,60 @@ export default function ComparePage() {
       </Head>
 
       <div className="space-y-6">
-        {/* Header */}
-        <div className="border-b border-[#30363d] pb-4">
-          <div className="flex items-center space-x-2">
-            <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#1f6feb]/15 text-[#58a6ff] border border-[#1f6feb]/40">
-              Cross-Commit Regression Tracker
-            </span>
-          </div>
-          <h1 className="text-xl font-bold text-[#f0f6fc] mt-2">
-            Verification Run Comparison
+        <div>
+          <h1 className="text-xl font-bold text-[#f0f6fc]">
+            Cross-Commit Verification Run Comparison
           </h1>
           <p className="text-xs text-[#8b949e] mt-1">
-            Compare findings and invariants between base and head runs to identify new regressions or confirmed fixes.
+            Compare findings and invariants between base and head runs across repositories to identify regressions and resolved fixes.
           </p>
         </div>
 
-        {/* Quick Demo Scenarios */}
-        {runs.some((r) => r.id === "run_demo_baseline_a10f") && (
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-[#8b949e] font-mono text-[11px]">
-              Demo Scenarios:
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                setBaseRunId("run_demo_baseline_a10f");
-                setHeadRunId("run_demo_regression_b21e");
-                router.push(
-                  "/compare?base=run_demo_baseline_a10f&head=run_demo_regression_b21e",
-                  undefined,
-                  { shallow: true }
-                );
-                performComparison(
-                  "run_demo_baseline_a10f",
-                  "run_demo_regression_b21e"
-                );
-              }}
-              className="px-2.5 py-1 rounded-md bg-[#da3633]/15 border border-[#da3633]/30 text-[#f85149] hover:bg-[#da3633]/25 transition font-mono text-[11px]"
-            >
-              ⚠ Baseline vs Invariant Regression (Detect Violation)
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setBaseRunId("run_demo_regression_b21e");
-                setHeadRunId("run_demo_fixed_c34d");
-                router.push(
-                  "/compare?base=run_demo_regression_b21e&head=run_demo_fixed_c34d",
-                  undefined,
-                  { shallow: true }
-                );
-                performComparison(
-                  "run_demo_regression_b21e",
-                  "run_demo_fixed_c34d"
-                );
-              }}
-              className="px-2.5 py-1 rounded-md bg-[#238636]/15 border border-[#238636]/30 text-[#3fb950] hover:bg-[#238636]/25 transition font-mono text-[11px]"
-            >
-              ✓ Regression vs Fixed (Verify Resolution)
-            </button>
-          </div>
-        )}
+        {/* Quick Demo Scenarios Across Repositories */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-[#8b949e] font-mono text-[11px]">
+            Comparison Scenarios:
+          </span>
+
+          <button
+            type="button"
+            onClick={() => {
+              setBaseRunId("run_pragathi_88a1");
+              setHeadRunId("run_pragathi_54b2");
+              router.push("/compare?base=run_pragathi_88a1&head=run_pragathi_54b2", undefined, { shallow: true });
+              performComparison("run_pragathi_88a1", "run_pragathi_54b2");
+            }}
+            className="px-2.5 py-1 rounded-md bg-[#da3633]/15 border border-[#da3633]/30 text-[#f85149] hover:bg-[#da3633]/25 transition font-mono text-[11px]"
+          >
+            ▲ pragathi: Main vs Staging Warning
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setBaseRunId("run_shelf_44f1");
+              setHeadRunId("run_shelf_21b3");
+              router.push("/compare?base=run_shelf_44f1&head=run_shelf_21b3", undefined, { shallow: true });
+              performComparison("run_shelf_44f1", "run_shelf_21b3");
+            }}
+            className="px-2.5 py-1 rounded-md bg-[#bc8cff]/15 border border-[#bc8cff]/30 text-[#d2a8ff] hover:bg-[#bc8cff]/25 transition font-mono text-[11px]"
+          >
+            ✦ code-shelf: Master vs Concurrency Hypothesis
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setBaseRunId("run_casefile_43c1");
+              setHeadRunId("run_casefile_77b2");
+              router.push("/compare?base=run_casefile_43c1&head=run_casefile_77b2", undefined, { shallow: true });
+              performComparison("run_casefile_43c1", "run_casefile_77b2");
+            }}
+            className="px-2.5 py-1 rounded-md bg-[#238636]/15 border border-[#238636]/30 text-[#3fb950] hover:bg-[#238636]/25 transition font-mono text-[11px]"
+          >
+            ✓ casefile: Audit Branch vs Verified Head
+          </button>
+        </div>
 
         {/* Selection Bar */}
         <form
@@ -146,7 +188,7 @@ export default function ComparePage() {
             >
               {runs.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.id} ({r.commit_sha.slice(0, 7)}) &bull; {r.status}
+                  [{r.repository_id}] {r.id} ({r.commit_sha.slice(0, 7)} · {r.branch}) &bull; {r.status}
                 </option>
               ))}
             </select>
@@ -167,7 +209,7 @@ export default function ComparePage() {
             >
               {runs.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.id} ({r.commit_sha.slice(0, 7)}) &bull; {r.status}
+                  [{r.repository_id}] {r.id} ({r.commit_sha.slice(0, 7)} · {r.branch}) &bull; {r.status}
                 </option>
               ))}
             </select>
@@ -183,49 +225,66 @@ export default function ComparePage() {
         </form>
 
         {errorMsg && (
-          <div className="p-4 rounded-md bg-[#da3633]/15 border border-[#da3633]/40 text-[#f85149] text-xs font-mono">
+          <div className="p-4 rounded-md bg-[#da3633]/15 border border-[#da3633]/30 text-[#f85149] text-xs font-mono">
             {errorMsg}
           </div>
         )}
 
-        {comparison && (
+        {/* Results */}
+        {loading ? (
+          <div className="p-16 text-center text-[#8b949e] border border-[#30363d] rounded-md bg-[#161b22] font-mono text-xs">
+            <span className="animate-spin inline-block mr-2">↻</span>
+            Diffing declarative invariant states and execution traces...
+          </div>
+        ) : comparison ? (
           <div className="space-y-6">
-            {/* Metric Counters */}
+            {/* Summary Counters */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-4 rounded-md bg-[#161b22] border border-[#30363d]">
+              <div className="p-4 rounded-md bg-[#161b22] border border-[#30363d] space-y-1">
                 <span className="text-[11px] font-mono uppercase text-[#f85149]">
                   New Regressions
                 </span>
-                <p className="text-2xl font-bold font-mono text-[#f85149] mt-1">
-                  +{comparison.total_regressions}
+                <p className="text-2xl font-bold font-mono text-[#f85149]">
+                  {comparison.total_regressions}
                 </p>
-                <span className="text-[11px] text-[#8b949e]">Failing in head, clean in base</span>
+                <span className="text-xs text-[#8b949e]">
+                  Failed in head, were passing in base
+                </span>
               </div>
 
-              <div className="p-4 rounded-md bg-[#161b22] border border-[#30363d]">
+              <div className="p-4 rounded-md bg-[#161b22] border border-[#30363d] space-y-1">
                 <span className="text-[11px] font-mono uppercase text-[#3fb950]">
                   Resolved Invariants
                 </span>
-                <p className="text-2xl font-bold font-mono text-[#3fb950] mt-1">
-                  -{comparison.total_resolved}
+                <p className="text-2xl font-bold font-mono text-[#3fb950]">
+                  {comparison.total_resolved}
                 </p>
-                <span className="text-[11px] text-[#8b949e]">Fixed in head commit</span>
+                <span className="text-xs text-[#8b949e]">
+                  Passing in head, were failing in base
+                </span>
               </div>
 
-              <div className="p-4 rounded-md bg-[#161b22] border border-[#30363d]">
-                <span className="text-[11px] font-mono uppercase text-[#e3b341]">
-                  Persistent Failures
+              <div className="p-4 rounded-md bg-[#161b22] border border-[#30363d] space-y-1">
+                <span className="text-[11px] font-mono uppercase text-[#8b949e]">
+                  Persistent Invariants
                 </span>
-                <p className="text-2xl font-bold font-mono text-[#e3b341] mt-1">
+                <p className="text-2xl font-bold font-mono text-[#f0f6fc]">
                   {comparison.total_persistent}
                 </p>
-                <span className="text-[11px] text-[#8b949e]">Failing across both runs</span>
+                <span className="text-xs text-[#8b949e]">
+                  Unchanged status across both runs
+                </span>
               </div>
             </div>
 
-            {/* Summary Message */}
-            <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded font-mono text-xs text-[#c9d1d9]">
-              &gt; {comparison.summary}
+            {/* Invariant Diff Statement */}
+            <div className="p-4 rounded-md bg-[#161b22] border border-[#30363d] space-y-1">
+              <span className="text-[11px] font-mono uppercase text-[#8b949e] block">
+                Verification Diff Summary:
+              </span>
+              <p className="text-xs text-[#c9d1d9] font-mono">
+                {comparison.summary}
+              </p>
             </div>
 
             {/* New Regressions List */}
@@ -236,7 +295,7 @@ export default function ComparePage() {
               </h3>
               {comparison.new_regressions.length === 0 ? (
                 <div className="p-6 rounded-md bg-[#161b22] border border-[#30363d] text-center text-xs text-[#8b949e] font-mono">
-                  ✔ Zero new regressions introduced in head run.
+                  ✓ Zero new regressions introduced in head run.
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -266,7 +325,7 @@ export default function ComparePage() {
               )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </>
   );

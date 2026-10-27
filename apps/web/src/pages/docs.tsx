@@ -140,7 +140,7 @@ export default function DocsPage() {
               rel="noreferrer"
               className="btn-apple-liquid btn-apple-blue px-3.5 py-1.5 text-xs font-semibold"
             >
-              ⚡ Open Swagger in New Tab ↗
+              Open Swagger in New Tab ↗
             </a>
             <a
               href="http://localhost:8000/redoc"

@@ -211,7 +211,7 @@ ${cmd}
           {finding.expected_behavior && (
             <div className="p-3 rounded-md bg-[#0d1117] border border-[#238636]/30 space-y-1">
               <span className="text-[11px] font-semibold text-[#3fb950] uppercase tracking-wider block">
-                ✔ Expected Behavior (Specification)
+                ✓ Expected Behavior (Specification)
               </span>
               <p className="text-xs text-[#c9d1d9] font-mono leading-relaxed">
                 {finding.expected_behavior}
@@ -222,7 +222,7 @@ ${cmd}
           {finding.actual_behavior && (
             <div className="p-3 rounded-md bg-[#0d1117] border border-[#da3633]/30 space-y-1">
               <span className="text-[11px] font-semibold text-[#f85149] uppercase tracking-wider block">
-                ✖ Observed Failure / State
+                ✕ Observed Failure / State
               </span>
               <p className="text-xs text-[#c9d1d9] font-mono leading-relaxed">
                 {finding.actual_behavior}
@@ -245,7 +245,7 @@ ${cmd}
                   }
                   className="btn-apple-liquid btn-apple-secondary px-2.5 py-1 text-xs"
                 >
-                  {copiedCmd ? "✔ Copied" : "Copy Command"}
+                  {copiedCmd ? "✓ Copied" : "Copy Command"}
                 </button>
                 <button
                   onClick={downloadScript}
@@ -278,7 +278,7 @@ ${cmd}
                   onClick={() => copyToClipboard(finding.execution_trace || "", true)}
                   className="text-[11px] text-[#8b949e] hover:text-[#c9d1d9]"
                 >
-                  {copiedScript ? "✔ Trace Copied" : "Copy Trace"}
+                  {copiedScript ? "✓ Trace Copied" : "Copy Trace"}
                 </button>
               )}
             </div>
