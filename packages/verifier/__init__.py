@@ -3,6 +3,13 @@
 from .models import VerificationStatus, EvidenceTrace, TestExecutionResult
 from .runner import IsolatedRunner
 from .adapters import BaseAdapter, PytestAdapter, GenericTestAdapter
+from .intelligence_engine import (
+    VerificationIntelligenceEngine,
+    ClassificationStatus,
+    SuspectedIssue,
+    VerificationEvidence,
+    VerifiedClassificationResult,
+)
 
 __all__ = [
     "VerificationStatus",
@@ -12,4 +19,9 @@ __all__ = [
     "BaseAdapter",
     "PytestAdapter",
     "GenericTestAdapter",
+    "VerificationIntelligenceEngine",
+    "ClassificationStatus",
+    "SuspectedIssue",
+    "VerificationEvidence",
+    "VerifiedClassificationResult",
 ]

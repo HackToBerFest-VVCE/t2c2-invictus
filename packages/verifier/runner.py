@@ -3,7 +3,7 @@
 import os
 import subprocess
 import time
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from .models import EvidenceTrace, TestExecutionResult, VerificationStatus
 from .adapters.base import BaseAdapter
 from .adapters.pytest_adapter import PytestAdapter
@@ -108,6 +108,45 @@ class IsolatedRunner:
             reproduction_command=reproduction_cmd,
             duration_ms=duration_ms,
         )
+
+    def run_command(self, cmd: Any) -> TestExecutionResult:
+        """Run a raw command string or token list and return TestExecutionResult."""
+        import shlex
+
+        if isinstance(cmd, str):
+            cmd_tokens = shlex.split(cmd, posix=True)
+        else:
+            cmd_tokens = list(cmd)
+
+        evidence = self.execute_command(cmd_tokens)
+        if evidence.exit_code == 124:
+            return TestExecutionResult(
+                adapter_name="custom_command",
+                status=VerificationStatus.CHECK_ERROR,
+                evidence=evidence,
+                error_message="Execution timed out.",
+            )
+        elif evidence.exit_code != 0:
+            return TestExecutionResult(
+                adapter_name="custom_command",
+                status=VerificationStatus.VERIFIED_FAILURE,
+                evidence=evidence,
+                failed_count=1,
+                error_message=evidence.stderr or "Command failed with non-zero exit code.",
+                failure_details=[
+                    {
+                        "test_name": "reproduction_test",
+                        "trace": evidence.stderr or evidence.stdout,
+                    }
+                ],
+            )
+        else:
+            return TestExecutionResult(
+                adapter_name="custom_command",
+                status=VerificationStatus.VERIFIED_PASS,
+                evidence=evidence,
+                passed_count=1,
+            )
 
     def auto_verify(self) -> TestExecutionResult:
         """Auto-detect available test adapters and execute verification."""

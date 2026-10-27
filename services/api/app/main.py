@@ -7,6 +7,7 @@ from .core.database import init_db
 from .api.v1.runs import router as runs_router
 from .api.v1.specs import router as specs_router
 from .api.v1.mcp import router as mcp_router
+from .api.v1.intelligence import router as intelligence_router
 from .webhooks.github import router as webhooks_router
 
 
@@ -33,6 +34,15 @@ def create_app() -> FastAPI:
                 "Inspect and execute Model Context Protocol (MCP) tools directly via "
                 "interactive REST endpoints (tool listing, verification, AI repair, "
                 "and fix branch)."
+            ),
+        },
+        {
+            "name": "Verification Intelligence Engine (VIE)",
+            "description": (
+                "Post-detection verification gatekeeper: evaluates suspected AI-detected bugs "
+                "against INVARIANT.md requirements and empirical test evidence using the "
+                "5-tier classification taxonomy (Reproduced, Strongly Supported, Potential, "
+                "Inconclusive, False Positive)."
             ),
         },
         {
@@ -80,6 +90,7 @@ def create_app() -> FastAPI:
     app.include_router(runs_router, prefix="/api")
     app.include_router(specs_router, prefix="/api")
     app.include_router(mcp_router, prefix="/api")
+    app.include_router(intelligence_router, prefix="/api")
     app.include_router(webhooks_router, prefix="/api")
 
     @app.get("/health", tags=["Health"])

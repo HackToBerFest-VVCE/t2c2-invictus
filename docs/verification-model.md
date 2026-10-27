@@ -132,3 +132,34 @@ The web dashboard provides interactive filtering:
 * Filter by status: `VERIFIED_FAILURE`, `AI_HYPOTHESIS`, `STATIC_WARNING`, `CHECK_ERROR`.
 * Filter by severity: `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFO`.
 * One-click download of reproduction scripts (`reproduce.sh`) and container execution logs.
+
+---
+
+## 6. Verification Intelligence Engine (VIE) Post-Detection Taxonomy
+
+To address the challenge of high false-positive rates from AI code reviewers, Invariant introduces the **Verification Intelligence Engine (VIE)** (`packages/verifier/intelligence_engine.py`). Rather than acting as a speculative scanner, the VIE operates as a **post-detection gatekeeper** that evaluates suspected issues against `INVARIANT.md` requirements and empirical reproduction evidence.
+
+### 6.1 The 5-Tier Post-Detection Classification Model
+
+| Status | Definition | Evidentiary Requirements | PR / Build Action |
+| :--- | :--- | :--- | :--- |
+| **`Reproduced`** | The suspected defect was conclusively reproduced in the isolated runner under documented conditions. | 1. Candidate reproduction test executed in isolated sandbox.<br>2. Exit code $\ne 0$.<br>3. Concrete assertion failure trace or crash captured (`ASSERTION_FAILURE`).<br>4. Verified against `INVARIANT.md` rules. | **BLOCK_PR** (Blocks PR merge, emits inline check annotations). |
+| **`Strongly Supported`** | Multiple corroborating static and semantic signals support the finding, but dynamic reproduction was unavailable. | 1. Corroborated by `INVARIANT.md` rule mapping.<br>2. Confirmed untested test gap identified in target file.<br>3. Static structural signals align with suspected flaw. | **WARN_REVIEWER** (Non-blocking warning; alerts reviewers to high-risk untested paths). |
+| **`Potential`** | The issue is logically plausible based on AI code analysis, but lacks dynamic reproduction or corroborating static proof. | 1. AI model postulated edge scenario.<br>2. No reproduction test has succeeded or test was not provided.<br>3. No concrete runtime evidence. | **ADVISORY_NOTICE** (Labeled as unverified AI hypothesis). |
+| **`Inconclusive`** | The verification check could not establish validity due to environmental, infrastructure, or tooling errors. | 1. Runner timed out ($>300$s).<br>2. Process crashed or OOM killed (`TIMEOUT_OR_CRASH`).<br>3. Missing dependency or syntax error in test harness. | **FIX_HARNESS** (Prompts developer to fix test harness or execution environment). |
+| **`False Positive`** | Evidence establishes that the suspected issue is invalid or non-reproducible. | 1. Candidate reproduction test executed cleanly with exit code `0` (`PASSING`).<br>2. Invariant assertions held true under empirical execution.<br>3. Code inspection proved invariant is already guarded upstream. | **DISMISS_FALSE_POSITIVE** (Suppressed from PR review comments; logged for accuracy calibration). |
+
+### 6.2 The Three-Step Test Integrity Filter
+
+A failed test alone does not prove a defect. Invariant enforces three verification gates:
+1. **Syntax & AST Pre-check**: Candidate test commands and scripts are parsed through AST verification before sandbox execution.
+2. **Execution Watchdog & Error Separation**: Harness crashes, missing modules, and execution timeouts are categorized as `TIMEOUT_OR_CRASH` $\rightarrow$ `Inconclusive`, preventing tool failure from being misreported as product defects.
+3. **Differential Grounding**: Tests are cross-referenced with `INVARIANT.md` specifications to ensure assertions reflect legitimate product contracts rather than hallucinated requirements.
+
+### 6.3 REST and MCP Interfaces
+
+* **REST API**:
+  - `POST /api/v1/intelligence/evaluate`: Ingests a `SuspectedIssue` and returns a `VerifiedClassificationResult` with reasoning, evidence, and suggested action.
+  - `GET /api/v1/intelligence/taxonomy`: Returns the full 5-tier classification schema and evidentiary definitions.
+* **Model Context Protocol (MCP)**:
+  - Tool: `invariant_evaluate_suspected_issue` available via stdio server for IDE integration (VS Code, Cursor, Windsurf).

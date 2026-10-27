@@ -55,16 +55,16 @@ The platform is divided into modular subsystems with decoupled lifecycles:
 
 ### 2.1 Major Modules and Responsibilities
 
-| Module | Directory (Planned) | Responsibilities | Status |
+| Module | Directory / Package | Responsibilities | Status |
 | :--- | :--- | :--- | :--- |
-| **Ingress API** | `api/` | Ingests webhooks, validates HMAC signatures, enforces rate limits, and enqueues jobs. | Planned |
-| **Orchestrator** | `core/orchestrator/` | Coordinates the verification lifecycle, manages state transitions, and resolves dependencies. | Planned |
-| **Specification Engine**| `spec/` | Parses markdown specifications (`INVARIANT.md`), validates schemas, and maps rules to source paths. | Specification/Design Complete |
-| **AI Assistant Gateway**| `ai/` | Builds prompt contexts for edge-case synthesis, enforces boundary guards, and parses AI output. | Planned |
-| **Execution Runner** | `runner/` | Manages ephemeral container sandboxes, mounts repositories, executes tests, and captures traces. | Planned |
-| **Findings Classifier**| `classifier/` | Evaluates raw execution outputs and assigns standardized confidence levels and evidence tags. | Specification/Design Complete |
-| **Storage Engine** | `db/` | Manages relational persistence for runs, checks, findings, and diagnostic logs. | Planned |
-| **Reporters** | `reporters/` | Formats and pushes findings to GitHub Checks API, webhook callbacks, and web dashboard. | Planned |
+| **Ingress & Control API** | `services/api/` | Ingests webhooks, validates HMAC signatures, enforces rate limits, orchestrates runs, and exposes REST endpoints. | Implemented |
+| **Specification Engine**| `packages/spec_engine/` | Parses markdown specifications (`INVARIANT.md`), validates schemas, and maps rules to source paths. | Implemented |
+| **Verification Intelligence Engine (VIE)** | `packages/verifier/` | Orchestrates post-detection evaluation, grounds findings against invariants, and coordinates isolated reproduction. | Implemented |
+| **Isolated Execution Runner** | `packages/verifier/runner.py` | Manages ephemeral execution sandboxes, scrubs secrets, executes test suites, and captures evidence traces. | Implemented |
+| **AI Engine Gateway** | `packages/ai_engine/` | Interfaces with live LLM providers (Gemini, OpenAI) for edge-case synthesis and targeted patch generation. | Implemented |
+| **Report Engine & Findings Normalizer** | `packages/report_engine/` | Formats and exports findings to GitHub Checks API, Markdown/JSON exports, and the 5-tier classification model. | Implemented |
+| **Model Context Protocol (MCP)** | `packages/mcp_server/` | Exposes Invariant inspection and verification tools directly to developer IDEs (VS Code, Cursor, Windsurf). | Implemented |
+| **Web Dashboard** | `apps/web/` | Next.js 14 dashboard displaying run comparisons, findings lifecycle, and interactive Swagger UI playground. | Implemented |
 
 ---
 

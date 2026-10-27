@@ -8,6 +8,7 @@ analyze failures with AI (Gemini/OpenAI), and generate automated fix branches.
 import sys
 import os
 import json
+import uuid
 from typing import Dict, Any, List
 
 # Ensure repository root is on sys.path
@@ -153,6 +154,56 @@ MCP_TOOLS: List[Dict[str, Any]] = [
                 },
             },
             "required": ["invariant_id", "finding_title"],
+        },
+    },
+    {
+        "name": "invariant_evaluate_suspected_issue",
+        "description": (
+            "Evaluate a suspected AI-detected bug or invariant violation against INVARIANT.md "
+            "requirements and empirical test evidence using the Verification Intelligence "
+            "Engine (VIE) 5-tier classification taxonomy (Reproduced, Strongly Supported, "
+            "Potential, Inconclusive, False Positive)."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "Summary title of the suspected defect.",
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed explanation of the suspected defect.",
+                },
+                "target_file": {
+                    "type": "string",
+                    "description": "Relative path to target source file.",
+                },
+                "affected_lines": {
+                    "type": "string",
+                    "description": "Affected line numbers or range.",
+                    "default": "",
+                },
+                "candidate_test_command": {
+                    "type": "string",
+                    "description": "Optional reproduction command (e.g. pytest tests/).",
+                },
+                "workspace_path": {
+                    "type": "string",
+                    "description": "Path to workspace repository root.",
+                    "default": ".",
+                },
+                "spec_path": {
+                    "type": "string",
+                    "description": "Path to INVARIANT.md specification file.",
+                    "default": "INVARIANT.md",
+                },
+                "rule_hint": {
+                    "type": "string",
+                    "description": "Optional invariant rule ID hint (e.g., INV-01).",
+                },
+            },
+            "required": ["title", "description", "target_file"],
         },
     },
 ]
@@ -331,6 +382,51 @@ class InvariantMCPServer:
         )
         return json.dumps(res, indent=2)
 
+    def handle_evaluate_issue(self, args: Dict[str, Any]) -> str:
+        from packages.verifier.intelligence_engine import (
+            VerificationIntelligenceEngine,
+            SuspectedIssue,
+        )
+
+        workspace = args.get("workspace_path", ".")
+        spec_path = args.get("spec_path", "INVARIANT.md")
+        engine = VerificationIntelligenceEngine(
+            workspace_root=workspace, spec_path=spec_path
+        )
+        issue = SuspectedIssue(
+            issue_id=args.get("issue_id", f"ISSUE-{uuid.uuid4().hex[:6].upper()}"),
+            title=args.get("title", "Suspected Defect"),
+            description=args.get("description", ""),
+            target_file=args.get("target_file", ""),
+            affected_lines=args.get("affected_lines", ""),
+            diff_patch=args.get("diff_patch"),
+            candidate_test_command=args.get("candidate_test_command"),
+            rule_hint=args.get("rule_hint"),
+        )
+        res = engine.evaluate_issue(issue)
+        return json.dumps(
+            {
+                "finding_id": res.finding_id,
+                "issue_id": res.issue_id,
+                "title": res.title,
+                "classification": res.classification.value,
+                "confidence_score": res.confidence_score,
+                "matched_invariant_id": res.matched_invariant_id,
+                "reasoning": res.reasoning,
+                "suggested_action": res.suggested_action,
+                "suggested_patch": res.suggested_patch,
+                "evidence": {
+                    "matched_invariants": res.evidence.matched_invariants,
+                    "has_test_gap": res.evidence.has_test_gap,
+                    "reproduction_command": res.evidence.reproduction_command,
+                    "exit_code": res.evidence.exit_code,
+                    "execution_trace": res.evidence.execution_trace,
+                    "test_integrity": res.evidence.test_integrity,
+                },
+            },
+            indent=2,
+        )
+
     def execute_tool(self, name: str, args: Dict[str, Any]) -> str:
         if name == "invariant_verify":
             return self.handle_verify(args)
@@ -342,6 +438,8 @@ class InvariantMCPServer:
             return self.handle_suggest_fix(args)
         elif name == "invariant_create_fix_branch":
             return self.handle_create_fix_branch(args)
+        elif name == "invariant_evaluate_suspected_issue":
+            return self.handle_evaluate_issue(args)
         else:
             return json.dumps({"error": f"Unknown tool: '{name}'"})
 
