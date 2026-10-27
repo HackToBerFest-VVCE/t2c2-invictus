@@ -7,7 +7,7 @@ import { fetchRun, getExportUrl } from "../../services/api";
 import { StatusBadge } from "../../components/StatusBadge";
 import { FindingCard } from "../../components/FindingCard";
 import { TriggerModal } from "../../components/TriggerModal";
-import { ALL_DEMO_REPOSITORIES } from "../../data/demoData";
+import { ALL_DEMO_REPOSITORIES, ExtendedRepository } from "../../data/demoData";
 
 export default function RunDetailsPage() {
   const router = useRouter();
@@ -24,8 +24,10 @@ export default function RunDetailsPage() {
     setErrorMsg(null);
 
     // Check if run exists in demo catalog
-    const allDemoRuns = ALL_DEMO_REPOSITORIES.flatMap((r) => r.recent_runs || []);
-    const demoMatch = allDemoRuns.find((r) => r.id === runId);
+    const allDemoRuns: VerificationRun[] = ALL_DEMO_REPOSITORIES.flatMap(
+      (r: ExtendedRepository) => r.recent_runs || []
+    );
+    const demoMatch = allDemoRuns.find((r: VerificationRun) => r.id === runId);
 
     fetchRun(runId)
       .then((data) => {

@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { fetchRuns, compareRuns } from "../services/api";
 import { VerificationRun, RunComparison } from "../types";
 import { FindingCard } from "../components/FindingCard";
-import { ALL_DEMO_REPOSITORIES } from "../data/demoData";
+import { ALL_DEMO_REPOSITORIES, ExtendedRepository } from "../data/demoData";
 
 export default function ComparePage() {
   const router = useRouter();
@@ -63,13 +63,15 @@ export default function ComparePage() {
 
   // Load available runs for selection from backend + all demo repositories
   useEffect(() => {
-    const allDemoRuns = ALL_DEMO_REPOSITORIES.flatMap((r) => r.recent_runs || []);
+    const allDemoRuns: VerificationRun[] = ALL_DEMO_REPOSITORIES.flatMap(
+      (r: ExtendedRepository) => r.recent_runs || []
+    );
 
     fetchRuns()
-      .then((data) => {
+      .then((data: VerificationRun[]) => {
         const runMap = new Map<string, VerificationRun>();
-        data.forEach((r) => runMap.set(r.id, r));
-        allDemoRuns.forEach((r) => {
+        data.forEach((r: VerificationRun) => runMap.set(r.id, r));
+        allDemoRuns.forEach((r: VerificationRun) => {
           if (!runMap.has(r.id)) runMap.set(r.id, r);
         });
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import { TriggerModal } from "../components/TriggerModal";
 import { analyzeSpecification } from "../services/api";
-import { SpecAnalysis } from "../types";
+import { SpecAnalysis, SpecInvariant } from "../types";
 import { useRepo } from "../context/RepoContext";
 import { DEMO_SPECS_BY_REPO } from "../data/demoData";
 
@@ -73,7 +73,7 @@ ${repoSpec.target_system} (Specification Version: ${repoSpec.spec_version})
 ## Declarative Invariant Rules
 ${repoSpec.invariants
   .map(
-    (inv) => `### ${inv.id}: ${inv.title}
+    (inv: SpecInvariant) => `### ${inv.id}: ${inv.title}
 - **Rule Statement:** ${inv.rule_statement}
 - **Formal Assertion:** \`${inv.formal_assertion || "N/A"}\`
 - **Severity Level:** ${inv.severity}

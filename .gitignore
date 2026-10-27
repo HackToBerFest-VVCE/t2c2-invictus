@@ -45,8 +45,9 @@ yarn-error.log*
 # Database & Storage
 *.db
 *.sqlite
-*.sqlite3
-data/
+/data/
+services/api/data/
+!apps/web/src/data/
 
 # Environment Variables & Secrets
 .env

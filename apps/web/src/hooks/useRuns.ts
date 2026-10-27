@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { VerificationRun } from "../types";
 import { fetchRuns } from "../services/api";
-import { ALL_DEMO_REPOSITORIES } from "../data/demoData";
+import { ALL_DEMO_REPOSITORIES, ExtendedRepository } from "../data/demoData";
 
 export function useRuns(selectedRepoId?: string) {
   const [runs, setRuns] = useState<VerificationRun[]>([]);
@@ -14,12 +14,14 @@ export function useRuns(selectedRepoId?: string) {
       const backendRuns = await fetchRuns().catch(() => []);
 
       // Gather demo runs for all repositories
-      const allDemoRuns = ALL_DEMO_REPOSITORIES.flatMap((repo) => repo.recent_runs || []);
+      const allDemoRuns: VerificationRun[] = ALL_DEMO_REPOSITORIES.flatMap(
+        (repo: ExtendedRepository) => repo.recent_runs || []
+      );
 
       // Merge backend live runs with demo runs, deduplicating by run ID
       const runMap = new Map<string, VerificationRun>();
-      backendRuns.forEach((r) => runMap.set(r.id, r));
-      allDemoRuns.forEach((r) => {
+      backendRuns.forEach((r: VerificationRun) => runMap.set(r.id, r));
+      allDemoRuns.forEach((r: VerificationRun) => {
         if (!runMap.has(r.id)) {
           runMap.set(r.id, r);
         }

@@ -6,7 +6,7 @@ import { Repository, VerificationRun, BackendHealth } from "../types";
 import { TriggerModal } from "../components/TriggerModal";
 import { useRepo } from "../context/RepoContext";
 
-import { ALL_DEMO_REPOSITORIES } from "../data/demoData";
+import { ALL_DEMO_REPOSITORIES, ExtendedRepository } from "../data/demoData";
 
 export default function ProfilePage() {
   const { activeRepo, setActiveRepo } = useRepo();
@@ -42,12 +42,14 @@ export default function ProfilePage() {
       })),
     ]).then(([r, runList, h]) => {
       // Gather demo runs for all repositories
-      const allDemoRuns = ALL_DEMO_REPOSITORIES.flatMap((repo) => repo.recent_runs || []);
+      const allDemoRuns: VerificationRun[] = ALL_DEMO_REPOSITORIES.flatMap(
+        (repo: ExtendedRepository) => repo.recent_runs || []
+      );
 
       // Merge backend live runs with all demo runs
       const runMap = new Map<string, VerificationRun>();
-      (runList || []).forEach((item) => runMap.set(item.id, item));
-      allDemoRuns.forEach((item) => {
+      (runList || []).forEach((item: VerificationRun) => runMap.set(item.id, item));
+      allDemoRuns.forEach((item: VerificationRun) => {
         if (!runMap.has(item.id)) {
           runMap.set(item.id, item);
         }

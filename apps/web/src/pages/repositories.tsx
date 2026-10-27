@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { fetchRepositories } from "../services/api";
+import { VerificationRun } from "../types";
 import { StatusBadge } from "../components/StatusBadge";
 import { TriggerModal } from "../components/TriggerModal";
 import { useRepo } from "../context/RepoContext";
@@ -22,7 +23,7 @@ export default function RepositoriesPage() {
     fetchRepositories()
       .then((backendData) => {
         // Merge live runs from backend for t2c2-invictus or any other matching repo
-        const merged = ALL_DEMO_REPOSITORIES.map((repo) => {
+        const merged = ALL_DEMO_REPOSITORIES.map((repo: ExtendedRepository) => {
           const liveRepo = backendData.find(
             (b) => b.name === repo.name || b.id === repo.id || b.full_name?.includes(repo.name)
           );
@@ -281,7 +282,7 @@ export default function RepositoriesPage() {
                         </span>
                       </div>
                       <div className="space-y-1.5">
-                        {repo.recent_runs.map((r) => (
+                        {repo.recent_runs.map((r: VerificationRun) => (
                           <Link
                             key={r.id}
                             href={`/runs/${r.id}`}
