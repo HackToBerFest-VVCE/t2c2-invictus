@@ -84,4 +84,43 @@ class MockAIProvider(BaseAIProvider):
                 )
             )
 
-        return hypotheses
+            return hypotheses
+
+    def generate_fix(
+        self,
+        invariant_rule: str,
+        failure_trace: str,
+        code_context: str,
+    ) -> dict:
+        """Deterministic heuristic fix generator when no LLM API key is present."""
+        is_balance_or_race = (
+            "balance" in invariant_rule.lower()
+            or "concurrency" in failure_trace.lower()
+            or "underflow" in failure_trace.lower()
+        )
+        if is_balance_or_race:
+            return {
+                "root_cause": (
+                    "Race condition or missing atomic constraint allowed state "
+                    "mutation below required boundary."
+                ),
+                "suggested_fix": (
+                    "Guard state transitions with threading locks or atomic database "
+                    "transactions (SELECT FOR UPDATE) to ensure balance >= 0."
+                ),
+                "replacement_code": (
+                    "with self._lock:\n"
+                    "    if self.stock.get(sku, 0) < quantity:\n"
+                    "        raise InsufficientStockError(f'Insufficient stock for {sku}')\n"
+                    "    self.stock[sku] -= quantity"
+                ),
+                "confidence": "MEDIUM",
+            }
+        return {
+            "root_cause": "Assertion failure indicating invariant specification violation.",
+            "suggested_fix": (
+                "Add defensive parameter validation and verify post-conditions match invariant."
+            ),
+            "replacement_code": "",
+            "confidence": "LOW",
+        }

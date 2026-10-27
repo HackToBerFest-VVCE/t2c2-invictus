@@ -105,3 +105,58 @@ class GenericAPIProvider(BaseAIProvider):
             return results
         except Exception:
             return []
+
+    def generate_fix(
+        self,
+        invariant_rule: str,
+        failure_trace: str,
+        code_context: str,
+    ) -> dict:
+        """Prompt OpenAI-compatible API to analyze failure and suggest a code patch."""
+        prompt = (
+            "You are an automated software repair engineer. "
+            "An invariant verification test failed.\n\n"
+            f"### Invariant Rule:\n{invariant_rule}\n\n"
+            f"### Failure Trace:\n{failure_trace}\n\n"
+            f"### Relevant Source Code:\n```python\n{code_context}\n```\n\n"
+            "Analyze the root cause and provide a fix. Return a strict JSON object with:\n"
+            '- "root_cause": Brief explanation of the violation\n'
+            '- "suggested_fix": Markdown explanation of the change\n'
+            '- "replacement_code": Exact replacement code block\n'
+            '- "confidence": "HIGH" | "MEDIUM" | "LOW"\n'
+        )
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+        }
+        body = {
+            "model": self.model_name,
+            "messages": [
+                {"role": "system", "content": "Return valid JSON only."},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.2,
+        }
+        req = urllib.request.Request(
+            f"{self.base_url}/chat/completions",
+            data=json.dumps(body).encode("utf-8"),
+            headers=headers,
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                content = data["choices"][0]["message"]["content"]
+                cleaned = content.strip()
+                if "```json" in cleaned:
+                    cleaned = cleaned.split("```json")[1].split("```")[0].strip()
+                elif "```" in cleaned:
+                    cleaned = cleaned.split("```")[1].split("```")[0].strip()
+                return json.loads(cleaned)
+        except Exception:
+            return {
+                "root_cause": "API request failed or unparseable.",
+                "suggested_fix": "Inspect failure trace and reproduction command locally.",
+                "replacement_code": "",
+                "confidence": "LOW",
+            }

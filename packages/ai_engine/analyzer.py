@@ -3,7 +3,7 @@
 from typing import List, Optional
 from packages.spec_engine.models import InvariantSpec
 from .interfaces import BaseAIProvider, AIHypothesis, AIRequestPayload
-from .providers.mock_provider import MockAIProvider
+from .factory import get_default_ai_provider
 
 
 class AIAnalyzer:
@@ -14,7 +14,7 @@ class AIAnalyzer:
     """
 
     def __init__(self, provider: Optional[BaseAIProvider] = None) -> None:
-        self.provider = provider or MockAIProvider()
+        self.provider = provider or get_default_ai_provider()
 
     def analyze_spec(
         self, spec: InvariantSpec, diff_content: str = ""
@@ -38,3 +38,23 @@ class AIAnalyzer:
         )
 
         return self.provider.generate_hypotheses(payload)
+
+    def suggest_fix(
+        self,
+        invariant_rule: str,
+        failure_trace: str,
+        code_context: str = "",
+    ) -> dict:
+        """Generate root-cause explanation and suggested repair code for an invariant failure."""
+        if hasattr(self.provider, "generate_fix"):
+            return self.provider.generate_fix(
+                invariant_rule=invariant_rule,
+                failure_trace=failure_trace,
+                code_context=code_context,
+            )
+        return {
+            "root_cause": "Provider does not implement automated fix generation.",
+            "suggested_fix": "Review failure trace and invariant rule.",
+            "replacement_code": "",
+            "confidence": "LOW",
+        }

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "invariant": {
+      "command": "python",
+      "args": [
+        "-m",
+        "packages.mcp_server.server"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "${env:GEMINI_API_KEY}",
+        "OPENAI_API_KEY": "${env:OPENAI_API_KEY}"
+      }
+    }
+  }
+}
